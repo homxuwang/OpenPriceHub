@@ -1,6 +1,5 @@
 // OpenPriceHub · 工具字母标 (无图占位) — 带场景色调
 
-import React from 'react';
 import type { ToolCategory } from '../../shared/types';
 import { SCENE_BG_SOFT, SCENE_TEXT } from '../lib/scene';
 

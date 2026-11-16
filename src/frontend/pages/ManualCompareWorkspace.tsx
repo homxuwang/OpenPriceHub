@@ -1,4 +1,7 @@
 import { useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
+import { calculatorCategory } from '../../shared/calculatorScope';
+import { MANUAL_CATEGORY_LABELS } from '../components/ManualComparisonResults';
 import { useLocale } from '../i18n';
 import QuickManualCompare from './ManualCompare';
 import DetailedManualCompare from './DetailedManualCompare';
@@ -8,6 +11,9 @@ type Mode = 'detailed' | 'quick';
 function ManualCompareWorkspace() {
   const locale = useLocale();
   const zh = locale === 'zh';
+  const [params, setParams] = useSearchParams();
+  const category = calculatorCategory(params.get('type'));
+  const [notice,setNotice]=useState('');
   const [mode, setMode] = useState<Mode>('detailed');
 
   return (
@@ -24,6 +30,9 @@ function ManualCompareWorkspace() {
         </p>
       </header>
 
+      <label className="label mb-6 block max-w-md">{zh ? '使用场景' : 'Usage category'}<select aria-label="Calculator category" className="input mt-2" value={category ?? 'all'} onChange={e => { const next = new URLSearchParams(params); next.delete('model'); if (e.target.value === 'all') next.delete('type'); else next.set('type', e.target.value); setParams(next); }}>
+        <option value="all">{zh ? '全部场景' : 'All categories'}</option>{(['image', 'video', 'tts', 'music', 'text', 'audio'] as const).map(c => <option key={c} value={c}>{MANUAL_CATEGORY_LABELS[locale][c]}</option>)}
+      </select></label>
       <div className="mb-6 grid gap-3 sm:grid-cols-2">
         <ModeButton
           active={mode === 'detailed'}
@@ -39,7 +48,8 @@ function ManualCompareWorkspace() {
         />
       </div>
 
-      {mode === 'detailed' ? <DetailedManualCompare /> : <QuickManualCompare />}
+      {notice&&<p role="status" className="mb-4 rounded-lg bg-primary-50 p-3 text-sm text-primary-700">{notice}</p>}
+      {mode === 'detailed' ? <DetailedManualCompare category={category} modelId={params.get('model')} platformId={params.get('platform')} /> : <QuickManualCompare category={category} onSavedToDetailed={()=>{const next=new URLSearchParams(params);next.delete('model');next.delete('platform');setParams(next);setMode('detailed');setNotice(zh?'快速记录已追加到详细模式，原档案保持保留。':'Quick records were added to detailed mode; existing records are retained.');}} />}
     </div>
   );
 }

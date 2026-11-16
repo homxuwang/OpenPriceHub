@@ -1,6 +1,5 @@
 // OpenPriceHub · 模型列表页 — 规格目录
 
-import React from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { MODEL_CATEGORIES, CATEGORY_LABELS } from '../../shared/constants';
 import { useModels } from '../hooks/useApi';

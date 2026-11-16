@@ -1,6 +1,5 @@
 // OpenPriceHub · 平台列表页 — 供应商图纸
 
-import React from 'react';
 import { Link } from 'react-router-dom';
 import { usePlatforms } from '../hooks/useApi';
 import Loading from '../components/Loading';

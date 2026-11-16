@@ -15,7 +15,7 @@ export async function getPlatforms(db: D1Database) {
       FROM platforms p
       ORDER BY p.name`
     )
-    .all();
+    .all<any>().then(result => result.results);
 
   return platforms.map((p) => ({
     id: p.id,
@@ -33,13 +33,13 @@ export async function getPlatforms(db: D1Database) {
 
 // 获取平台详情
 export async function getPlatformById(db: D1Database, id: string) {
-  const platform = await db.prepare('SELECT * FROM platforms WHERE id = ?').bind(id).first();
+  const platform = await db.prepare('SELECT * FROM platforms WHERE id = ?').bind(id).first<any>();
 
   if (!platform) {
     return null;
   }
 
-  const plans = await db.prepare('SELECT * FROM plans WHERE platform_id = ? ORDER BY price').bind(id).all();
+  const plans = await db.prepare('SELECT * FROM plans WHERE platform_id = ? ORDER BY price').bind(id).all<any>().then(result => result.results);
 
   const rules = await db
     .prepare(
@@ -50,7 +50,7 @@ export async function getPlatformById(db: D1Database, id: string) {
        ORDER BY m.name`
     )
     .bind(id)
-    .all();
+    .all<any>().then(result => result.results);
 
   return {
     id: platform.id,
@@ -111,7 +111,7 @@ export async function createPlatform(db: D1Database, data: any) {
 
 // 更新平台
 export async function updatePlatform(db: D1Database, id: string, data: any) {
-  const existing = await db.prepare('SELECT * FROM platforms WHERE id = ?').bind(id).first();
+  const existing = await db.prepare('SELECT * FROM platforms WHERE id = ?').bind(id).first<any>();
 
   if (!existing) {
     return null;
@@ -131,7 +131,7 @@ export async function updatePlatform(db: D1Database, id: string, data: any) {
 
 // 删除平台
 export async function deletePlatform(db: D1Database, id: string) {
-  const existing = await db.prepare('SELECT * FROM platforms WHERE id = ?').bind(id).first();
+  const existing = await db.prepare('SELECT * FROM platforms WHERE id = ?').bind(id).first<any>();
 
   if (!existing) {
     return false;

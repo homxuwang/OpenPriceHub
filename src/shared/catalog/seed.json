@@ -1,0 +1,1224 @@
+{
+  "version": 1,
+  "updatedAt": "2026-11-02",
+  "sources": [
+    {
+      "id": "midjourney-plans",
+      "url": "https://docs.midjourney.com/hc/en-us/articles/27870484040333-Comparing-Midjourney-Plans",
+      "title": "Midjourney plan comparison",
+      "checkedAt": "2026-10-30",
+      "notes": "Basic $10/month or $96/year. GPU time is not a fixed image quota. No per-image price inferred."
+    },
+    {
+      "id": "replicate-flux",
+      "url": "https://replicate.com/black-forest-labs/flux-schnell",
+      "title": "Replicate FLUX.1 schnell",
+      "checkedAt": "2026-10-30",
+      "notes": "Browser-verified pricing: $3 per 1,000 output images. Apache-2.0 model; API available."
+    },
+    {
+      "id": "runway-plans",
+      "url": "https://runway.com/pricing",
+      "title": "Runway subscriptions",
+      "checkedAt": "2026-10-30",
+      "notes": "Standard $15 monthly or $144 annually; 625 credits/month. Free 125 credits are once-only. API billing is separate."
+    },
+    {
+      "id": "runway-credits",
+      "url": "https://help.runwayml.com/hc/en-us/articles/15124877443219-How-do-credits-work",
+      "title": "Runway credit usage",
+      "checkedAt": "2026-10-30",
+      "notes": "Gen-4.5 uses 12 credits/second. Published example supports 5- or 10-second generations."
+    },
+    {
+      "id": "runway-api",
+      "url": "https://dev.runwayml.com/pricing",
+      "title": "Runway API pricing",
+      "checkedAt": "2026-10-30",
+      "notes": "Gen-4 Turbo API: $0.05/second. Separate from web subscription credits."
+    },
+    {
+      "id": "replicate-kling",
+      "url": "https://replicate.com/kwaivgi/kling-v2.1",
+      "title": "Replicate Kling v2.1",
+      "checkedAt": "2026-10-30",
+      "notes": "Browser-verified: Standard 720p $0.05/second; Pro 1080p $0.09/second. Image input; 5 or 10 seconds. Not Kling web subscription pricing."
+    },
+    {
+      "id": "elevenlabs-pricing",
+      "url": "https://elevenlabs.io/pricing",
+      "title": "ElevenLabs pricing and FAQ",
+      "checkedAt": "2026-10-30",
+      "notes": "Regular Starter $6/month, 30,000 credits; Free 10,000. Multilingual v2 uses one credit/character. Intro offers excluded."
+    },
+    {
+      "id": "google-tts",
+      "url": "https://cloud.google.com/text-to-speech/pricing",
+      "title": "Google Cloud TTS pricing",
+      "checkedAt": "2026-10-30",
+      "notes": "Standard voices: 4 million free characters/month, then $4/million. Billing account required; SSML and whitespace counting rules apply."
+    },
+    {
+      "id": "cartesia-pricing",
+      "url": "https://www.cartesia.ai/pricing",
+      "title": "Cartesia pricing",
+      "checkedAt": "2026-10-30",
+      "notes": "Free 20,000 credits/month; Pro $5/month includes 100,000. One TTS character equals one credit; minute conversion is approximate and not used."
+    },
+    {
+      "id": "suno-pricing",
+      "url": "https://suno.com/pricing",
+      "title": "Suno pricing",
+      "checkedAt": "2026-10-30",
+      "notes": "Pro annual $96 ($8/month equivalent), 2,500 credits/month. Free 50 credits/day, no commercial rights or song downloads. Current plan limits apply."
+    },
+    {
+      "id": "suno-v6",
+      "url": "https://help.suno.com/en/articles/13924481",
+      "title": "Suno v6 FAQ",
+      "checkedAt": "2026-10-30",
+      "notes": "Official v6 FAQ specifies 10 credits for a generation producing two songs. Applies only to this action/model, not editing or other features."
+    },
+    {
+      "id": "stable-pricing",
+      "url": "https://stableaudio.com/pricing",
+      "title": "Stable Audio pricing",
+      "checkedAt": "2026-10-30",
+      "notes": "Browser-verified: free 50 credits/month; paid entry $12/month for 660 credits. Approximate generation counts not treated as exact tariffs."
+    }
+  ],
+  "products": [
+    {
+      "id": "midjourney",
+      "slug": "midjourney",
+      "name": "Midjourney",
+      "category": "image",
+      "provider": "Midjourney",
+      "website": "https://www.midjourney.com",
+      "summary": "Image creation with subscriptions measured in GPU time.",
+      "summaryZh": "以 GPU 时间计量的订阅制图片创作工具。",
+      "features": [
+        "text-to-image",
+        "image-editing"
+      ],
+      "models": [
+        "Midjourney"
+      ],
+      "api": null,
+      "status": "verified",
+      "verifiedAt": "2026-10-30",
+      "sourceIds": [
+        "midjourney-plans"
+      ],
+      "plans": [
+        {
+          "id": "mj-basic",
+          "name": "Basic",
+          "amount": 10,
+          "billing": "monthly",
+          "currency": "USD",
+          "pricingModels": [
+            "monthly"
+          ],
+          "freeAllowance": "",
+          "commercial": null,
+          "limits": [
+            "200 fast GPU minutes/month; image count varies."
+          ],
+          "sourceIds": [
+            "midjourney-plans"
+          ],
+          "verifiedAt": "2026-10-30",
+          "status": "verified",
+          "components": [
+            {
+              "id": "mj-gpu",
+              "unit": "image",
+              "unitSize": 1,
+              "rate": null,
+              "included": null,
+              "creditAllowance": null,
+              "creditsPerUnit": null,
+              "allowancePeriod": "month",
+              "model": "",
+              "resolution": "",
+              "quality": "",
+              "durations": [],
+              "maxDuration": null,
+              "note": "GPU time cannot be converted to a fixed image count."
+            }
+          ],
+          "features": [
+            "text-to-image"
+          ]
+        },
+        {
+          "id": "mj-basic-year",
+          "name": "Basic annual",
+          "amount": 96,
+          "billing": "annual",
+          "currency": "USD",
+          "pricingModels": [
+            "annual"
+          ],
+          "freeAllowance": "",
+          "commercial": null,
+          "limits": [
+            "Full year paid upfront; 200 fast GPU minutes each month."
+          ],
+          "sourceIds": [
+            "midjourney-plans"
+          ],
+          "verifiedAt": "2026-10-30",
+          "status": "verified",
+          "components": [],
+          "features": [
+            "text-to-image"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "flux-schnell",
+      "slug": "flux-schnell",
+      "name": "FLUX.1 schnell on Replicate",
+      "category": "image",
+      "provider": "Replicate / Black Forest Labs",
+      "website": "https://replicate.com/black-forest-labs/flux-schnell",
+      "summary": "Text-to-image API billed per output image.",
+      "summaryZh": "按输出图片计费的文生图 API。",
+      "features": [
+        "text-to-image"
+      ],
+      "models": [
+        "FLUX.1 schnell"
+      ],
+      "api": true,
+      "status": "verified",
+      "verifiedAt": "2026-10-30",
+      "sourceIds": [
+        "replicate-flux"
+      ],
+      "plans": [
+        {
+          "id": "flux-payg",
+          "name": "Output images",
+          "amount": 0,
+          "billing": "pay-as-you-go",
+          "currency": "USD",
+          "pricingModels": [
+            "pay-as-you-go"
+          ],
+          "freeAllowance": "",
+          "commercial": true,
+          "limits": [
+            "API workflow; output style and controls differ from Midjourney."
+          ],
+          "sourceIds": [
+            "replicate-flux"
+          ],
+          "verifiedAt": "2026-10-30",
+          "status": "verified",
+          "components": [
+            {
+              "id": "flux-image",
+              "unit": "image",
+              "unitSize": 1000,
+              "rate": 3,
+              "included": null,
+              "creditAllowance": null,
+              "creditsPerUnit": null,
+              "allowancePeriod": "month",
+              "model": "FLUX.1 schnell",
+              "resolution": "",
+              "quality": "",
+              "durations": [],
+              "maxDuration": null,
+              "note": "Published per 1,000 output images; counts outputs, not requests."
+            }
+          ],
+          "features": [
+            "text-to-image"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "runway",
+      "slug": "runway",
+      "name": "Runway",
+      "category": "video",
+      "provider": "Runway",
+      "website": "https://runway.com",
+      "summary": "Video creation workspace and separately billed generation API.",
+      "summaryZh": "视频创作工作区及独立计费的生成 API。",
+      "features": [
+        "text-to-video",
+        "image-to-video",
+        "video-editing"
+      ],
+      "models": [
+        "Gen-4.5",
+        "Gen-4 Turbo"
+      ],
+      "api": true,
+      "status": "verified",
+      "verifiedAt": "2026-10-30",
+      "sourceIds": [
+        "runway-plans",
+        "runway-credits",
+        "runway-api"
+      ],
+      "plans": [
+        {
+          "id": "runway-free",
+          "name": "Free trial credits",
+          "amount": 0,
+          "billing": "free",
+          "currency": "USD",
+          "pricingModels": [
+            "free",
+            "freemium",
+            "credit-based"
+          ],
+          "freeAllowance": "125 credits once; not a monthly allowance.",
+          "commercial": null,
+          "limits": [
+            "Model access varies; do not assume paid model access."
+          ],
+          "sourceIds": [
+            "runway-plans"
+          ],
+          "verifiedAt": "2026-10-30",
+          "status": "verified",
+          "components": [],
+          "features": []
+        },
+        {
+          "id": "runway-standard",
+          "name": "Standard",
+          "amount": 15,
+          "billing": "monthly",
+          "currency": "USD",
+          "pricingModels": [
+            "monthly",
+            "credit-based"
+          ],
+          "freeAllowance": "",
+          "commercial": null,
+          "limits": [
+            "625 shared credits/month; extra credit price not verified."
+          ],
+          "sourceIds": [
+            "runway-plans",
+            "runway-credits"
+          ],
+          "verifiedAt": "2026-10-30",
+          "status": "verified",
+          "components": [
+            {
+              "id": "runway-gen45",
+              "unit": "second",
+              "unitSize": 1,
+              "rate": null,
+              "included": null,
+              "creditAllowance": 625,
+              "creditsPerUnit": 12,
+              "allowancePeriod": "month",
+              "model": "Gen-4.5",
+              "resolution": "",
+              "quality": "",
+              "durations": [
+                5,
+                10
+              ],
+              "maxDuration": null,
+              "note": ""
+            }
+          ],
+          "features": [
+            "text-to-video",
+            "image-to-video"
+          ]
+        },
+        {
+          "id": "runway-standard-year",
+          "name": "Standard annual",
+          "amount": 144,
+          "billing": "annual",
+          "currency": "USD",
+          "pricingModels": [
+            "annual",
+            "credit-based"
+          ],
+          "freeAllowance": "",
+          "commercial": null,
+          "limits": [
+            "Annual payment upfront; 625 shared credits/month."
+          ],
+          "sourceIds": [
+            "runway-plans",
+            "runway-credits"
+          ],
+          "verifiedAt": "2026-10-30",
+          "status": "verified",
+          "components": [
+            {
+              "id": "runway-gen45-year",
+              "unit": "second",
+              "unitSize": 1,
+              "rate": null,
+              "included": null,
+              "creditAllowance": 625,
+              "creditsPerUnit": 12,
+              "allowancePeriod": "month",
+              "model": "Gen-4.5",
+              "resolution": "",
+              "quality": "",
+              "durations": [
+                5,
+                10
+              ],
+              "maxDuration": null,
+              "note": ""
+            }
+          ],
+          "features": [
+            "text-to-video",
+            "image-to-video"
+          ]
+        },
+        {
+          "id": "runway-api-plan",
+          "name": "Gen-4 Turbo API",
+          "amount": 0,
+          "billing": "pay-as-you-go",
+          "currency": "USD",
+          "pricingModels": [
+            "pay-as-you-go"
+          ],
+          "freeAllowance": "",
+          "commercial": null,
+          "limits": [
+            "Separate developer account billing; subscription credits do not apply."
+          ],
+          "sourceIds": [
+            "runway-api"
+          ],
+          "verifiedAt": "2026-10-30",
+          "status": "verified",
+          "components": [
+            {
+              "id": "runway-api-second",
+              "unit": "second",
+              "unitSize": 1,
+              "rate": 0.05,
+              "included": null,
+              "creditAllowance": null,
+              "creditsPerUnit": null,
+              "allowancePeriod": "month",
+              "model": "Gen-4 Turbo",
+              "resolution": "",
+              "quality": "",
+              "durations": [
+                5,
+                10
+              ],
+              "maxDuration": null,
+              "note": ""
+            }
+          ],
+          "features": [
+            "image-to-video"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "kling-via-replicate",
+      "slug": "kling-via-replicate",
+      "name": "Kling v2.1 on Replicate",
+      "category": "video",
+      "provider": "Replicate / Kuaishou",
+      "website": "https://replicate.com/kwaivgi/kling-v2.1",
+      "summary": "Image-to-video API with resolution-specific pricing.",
+      "summaryZh": "按分辨率分别计费的图生视频 API。",
+      "features": [
+        "image-to-video"
+      ],
+      "models": [
+        "Kling v2.1"
+      ],
+      "api": true,
+      "status": "verified",
+      "verifiedAt": "2026-10-30",
+      "sourceIds": [
+        "replicate-kling"
+      ],
+      "plans": [
+        {
+          "id": "kling-standard",
+          "name": "Standard 720p API",
+          "amount": 0,
+          "billing": "pay-as-you-go",
+          "currency": "USD",
+          "pricingModels": [
+            "pay-as-you-go"
+          ],
+          "freeAllowance": "",
+          "commercial": null,
+          "limits": [],
+          "sourceIds": [
+            "replicate-kling"
+          ],
+          "verifiedAt": "2026-10-30",
+          "status": "verified",
+          "components": [
+            {
+              "id": "kling-720",
+              "unit": "second",
+              "unitSize": 1,
+              "rate": 0.05,
+              "included": null,
+              "creditAllowance": null,
+              "creditsPerUnit": null,
+              "allowancePeriod": "month",
+              "model": "Kling v2.1",
+              "resolution": "720p",
+              "quality": "standard",
+              "durations": [
+                5,
+                10
+              ],
+              "maxDuration": null,
+              "note": ""
+            }
+          ],
+          "features": [
+            "image-to-video"
+          ]
+        },
+        {
+          "id": "kling-pro",
+          "name": "Pro 1080p API",
+          "amount": 0,
+          "billing": "pay-as-you-go",
+          "currency": "USD",
+          "pricingModels": [
+            "pay-as-you-go"
+          ],
+          "freeAllowance": "",
+          "commercial": null,
+          "limits": [],
+          "sourceIds": [
+            "replicate-kling"
+          ],
+          "verifiedAt": "2026-10-30",
+          "status": "verified",
+          "components": [
+            {
+              "id": "kling-1080",
+              "unit": "second",
+              "unitSize": 1,
+              "rate": 0.09,
+              "included": null,
+              "creditAllowance": null,
+              "creditsPerUnit": null,
+              "allowancePeriod": "month",
+              "model": "Kling v2.1",
+              "resolution": "1080p",
+              "quality": "pro",
+              "durations": [
+                5,
+                10
+              ],
+              "maxDuration": null,
+              "note": ""
+            }
+          ],
+          "features": [
+            "image-to-video"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "kling-ai",
+      "slug": "kling-ai",
+      "name": "Kling AI",
+      "category": "video",
+      "provider": "Kuaishou",
+      "website": "https://app.klingai.com",
+      "summary": "Web subscription pricing awaits verification; API offers are listed separately.",
+      "summaryZh": "网页订阅价格待核验；API 报价单独展示。",
+      "features": [],
+      "models": [],
+      "api": null,
+      "status": "pending",
+      "verifiedAt": null,
+      "sourceIds": [],
+      "plans": []
+    },
+    {
+      "id": "elevenlabs",
+      "slug": "elevenlabs",
+      "name": "ElevenLabs",
+      "category": "voice",
+      "provider": "ElevenLabs",
+      "website": "https://elevenlabs.io",
+      "summary": "Speech generation and voice cloning with shared credits.",
+      "summaryZh": "提供语音生成和声音克隆，多个功能共用积分。",
+      "features": [
+        "text-to-speech",
+        "voice-cloning",
+        "speech-to-speech"
+      ],
+      "models": [
+        "Multilingual v2"
+      ],
+      "api": true,
+      "status": "verified",
+      "verifiedAt": "2026-10-30",
+      "sourceIds": [
+        "elevenlabs-pricing"
+      ],
+      "plans": [
+        {
+          "id": "eleven-free",
+          "name": "Free",
+          "amount": 0,
+          "billing": "free",
+          "currency": "USD",
+          "pricingModels": [
+            "free",
+            "freemium",
+            "credit-based"
+          ],
+          "freeAllowance": "10,000 credits/month.",
+          "commercial": false,
+          "limits": [],
+          "sourceIds": [
+            "elevenlabs-pricing"
+          ],
+          "verifiedAt": "2026-10-30",
+          "status": "verified",
+          "components": [
+            {
+              "id": "el-free-chars",
+              "unit": "characters",
+              "unitSize": 1,
+              "rate": null,
+              "included": null,
+              "creditAllowance": 10000,
+              "creditsPerUnit": 1,
+              "allowancePeriod": "month",
+              "model": "Multilingual v2",
+              "resolution": "",
+              "quality": "",
+              "durations": [],
+              "maxDuration": null,
+              "note": ""
+            }
+          ],
+          "features": [
+            "text-to-speech"
+          ]
+        },
+        {
+          "id": "eleven-starter",
+          "name": "Starter",
+          "amount": 6,
+          "billing": "monthly",
+          "currency": "USD",
+          "pricingModels": [
+            "monthly",
+            "credit-based"
+          ],
+          "freeAllowance": "",
+          "commercial": true,
+          "limits": [
+            "30,000 shared credits/month; excludes first-month promotions."
+          ],
+          "sourceIds": [
+            "elevenlabs-pricing"
+          ],
+          "verifiedAt": "2026-10-30",
+          "status": "verified",
+          "components": [
+            {
+              "id": "el-starter-chars",
+              "unit": "characters",
+              "unitSize": 1,
+              "rate": null,
+              "included": null,
+              "creditAllowance": 30000,
+              "creditsPerUnit": 1,
+              "allowancePeriod": "month",
+              "model": "Multilingual v2",
+              "resolution": "",
+              "quality": "",
+              "durations": [],
+              "maxDuration": null,
+              "note": ""
+            }
+          ],
+          "features": [
+            "text-to-speech",
+            "voice-cloning"
+          ]
+        },
+        {
+          "id": "eleven-year",
+          "name": "Starter annual",
+          "amount": 60,
+          "billing": "annual",
+          "currency": "USD",
+          "pricingModels": [
+            "annual",
+            "credit-based"
+          ],
+          "freeAllowance": "",
+          "commercial": true,
+          "limits": [
+            "Annual prepayment; 30,000 credits per month."
+          ],
+          "sourceIds": [
+            "elevenlabs-pricing"
+          ],
+          "verifiedAt": "2026-10-30",
+          "status": "verified",
+          "components": [
+            {
+              "id": "el-year-chars",
+              "unit": "characters",
+              "unitSize": 1,
+              "rate": null,
+              "included": null,
+              "creditAllowance": 30000,
+              "creditsPerUnit": 1,
+              "allowancePeriod": "month",
+              "model": "Multilingual v2",
+              "resolution": "",
+              "quality": "",
+              "durations": [],
+              "maxDuration": null,
+              "note": ""
+            }
+          ],
+          "features": [
+            "text-to-speech",
+            "voice-cloning"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "google-cloud-tts",
+      "slug": "google-cloud-tts",
+      "name": "Google Cloud TTS",
+      "category": "voice",
+      "provider": "Google Cloud",
+      "website": "https://cloud.google.com/text-to-speech",
+      "summary": "Character-priced speech API; rates depend on voice model.",
+      "summaryZh": "按字符计费的语音 API，不同声音模型价格不同。",
+      "features": [
+        "text-to-speech"
+      ],
+      "models": [
+        "Standard voices"
+      ],
+      "api": true,
+      "status": "verified",
+      "verifiedAt": "2026-10-30",
+      "sourceIds": [
+        "google-tts"
+      ],
+      "plans": [
+        {
+          "id": "google-standard",
+          "name": "Standard voices",
+          "amount": 0,
+          "billing": "pay-as-you-go",
+          "currency": "USD",
+          "pricingModels": [
+            "pay-as-you-go",
+            "freemium"
+          ],
+          "freeAllowance": "4,000,000 characters/month for Standard voices.",
+          "commercial": null,
+          "limits": [
+            "Billing must be enabled. Other Google voice families have different rates.",
+            "SSML tags, whitespace and newlines count according to vendor rules."
+          ],
+          "sourceIds": [
+            "google-tts"
+          ],
+          "verifiedAt": "2026-10-30",
+          "status": "verified",
+          "components": [
+            {
+              "id": "google-chars",
+              "unit": "characters",
+              "unitSize": 1000000,
+              "rate": 4,
+              "included": 4000000,
+              "creditAllowance": null,
+              "creditsPerUnit": null,
+              "allowancePeriod": "month",
+              "model": "Standard voices",
+              "resolution": "",
+              "quality": "",
+              "durations": [],
+              "maxDuration": null,
+              "note": ""
+            }
+          ],
+          "features": [
+            "text-to-speech"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "cartesia",
+      "slug": "cartesia",
+      "name": "Cartesia",
+      "category": "voice",
+      "provider": "Cartesia",
+      "website": "https://cartesia.ai",
+      "summary": "Character-based speech generation with voice cloning on paid plans.",
+      "summaryZh": "按字符计量的语音生成，付费套餐支持声音克隆。",
+      "features": [
+        "text-to-speech",
+        "voice-cloning"
+      ],
+      "models": [
+        "Sonic"
+      ],
+      "api": true,
+      "status": "verified",
+      "verifiedAt": "2026-10-30",
+      "sourceIds": [
+        "cartesia-pricing"
+      ],
+      "plans": [
+        {
+          "id": "cartesia-free",
+          "name": "Free",
+          "amount": 0,
+          "billing": "free",
+          "currency": "USD",
+          "pricingModels": [
+            "free",
+            "freemium",
+            "credit-based"
+          ],
+          "freeAllowance": "20,000 credits/month.",
+          "commercial": false,
+          "limits": [],
+          "sourceIds": [
+            "cartesia-pricing"
+          ],
+          "verifiedAt": "2026-10-30",
+          "status": "verified",
+          "components": [
+            {
+              "id": "ca-free",
+              "unit": "characters",
+              "unitSize": 1,
+              "rate": null,
+              "included": null,
+              "creditAllowance": 20000,
+              "creditsPerUnit": 1,
+              "allowancePeriod": "month",
+              "model": "Sonic",
+              "resolution": "",
+              "quality": "",
+              "durations": [],
+              "maxDuration": null,
+              "note": ""
+            }
+          ],
+          "features": [
+            "text-to-speech"
+          ]
+        },
+        {
+          "id": "cartesia-pro",
+          "name": "Pro",
+          "amount": 5,
+          "billing": "monthly",
+          "currency": "USD",
+          "pricingModels": [
+            "monthly",
+            "credit-based"
+          ],
+          "freeAllowance": "",
+          "commercial": true,
+          "limits": [
+            "100,000 shared credits/month."
+          ],
+          "sourceIds": [
+            "cartesia-pricing"
+          ],
+          "verifiedAt": "2026-10-30",
+          "status": "verified",
+          "components": [
+            {
+              "id": "ca-pro",
+              "unit": "characters",
+              "unitSize": 1,
+              "rate": null,
+              "included": null,
+              "creditAllowance": 100000,
+              "creditsPerUnit": 1,
+              "allowancePeriod": "month",
+              "model": "Sonic",
+              "resolution": "",
+              "quality": "",
+              "durations": [],
+              "maxDuration": null,
+              "note": ""
+            }
+          ],
+          "features": [
+            "text-to-speech",
+            "voice-cloning"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "suno",
+      "slug": "suno",
+      "name": "Suno",
+      "category": "music",
+      "provider": "Suno",
+      "website": "https://suno.com",
+      "summary": "Song generation with separate generation and download allowances.",
+      "summaryZh": "歌曲生成服务，生成额度和下载额度分别限制。",
+      "features": [
+        "text-to-music",
+        "ai-song-generation",
+        "music-editing"
+      ],
+      "models": [
+        "v6",
+        "v6-mini"
+      ],
+      "api": null,
+      "status": "verified",
+      "verifiedAt": "2026-10-30",
+      "sourceIds": [
+        "suno-pricing",
+        "suno-v6"
+      ],
+      "plans": [
+        {
+          "id": "suno-free",
+          "name": "Free",
+          "amount": 0,
+          "billing": "free",
+          "currency": "USD",
+          "pricingModels": [
+            "free",
+            "freemium",
+            "credit-based"
+          ],
+          "freeAllowance": "50 credits/day; no monthly song downloads.",
+          "commercial": false,
+          "limits": [
+            "Free model only; daily reset cannot be treated as a monthly pool."
+          ],
+          "sourceIds": [
+            "suno-pricing"
+          ],
+          "verifiedAt": "2026-10-30",
+          "status": "verified",
+          "components": [],
+          "features": [
+            "text-to-music",
+            "ai-song-generation"
+          ]
+        },
+        {
+          "id": "suno-pro-annual",
+          "name": "Pro annual",
+          "amount": 96,
+          "billing": "annual",
+          "currency": "USD",
+          "pricingModels": [
+            "annual",
+            "credit-based"
+          ],
+          "freeAllowance": "",
+          "commercial": true,
+          "limits": [
+            "2,500 credits/month; 20 song downloads/month.",
+            "Cost covers generation, not unlimited usable/downloadable songs."
+          ],
+          "sourceIds": [
+            "suno-pricing",
+            "suno-v6"
+          ],
+          "verifiedAt": "2026-10-30",
+          "status": "verified",
+          "components": [
+            {
+              "id": "suno-v6-gen",
+              "unit": "song",
+              "unitSize": 2,
+              "rate": null,
+              "included": null,
+              "creditAllowance": 2500,
+              "creditsPerUnit": 10,
+              "allowancePeriod": "month",
+              "model": "v6",
+              "resolution": "",
+              "quality": "",
+              "durations": [],
+              "maxDuration": null,
+              "note": "Billed in pairs: 10 credits produces two songs. Editing and downloads excluded."
+            }
+          ],
+          "features": [
+            "text-to-music",
+            "ai-song-generation"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "stable-audio",
+      "slug": "stable-audio",
+      "name": "Stable Audio",
+      "category": "music",
+      "provider": "Stability AI",
+      "website": "https://stableaudio.com",
+      "summary": "Audio and music generation with a monthly credit allowance.",
+      "summaryZh": "按月提供积分的音频与音乐生成服务。",
+      "features": [
+        "text-to-music",
+        "instrumental-generation"
+      ],
+      "models": [
+        "Stable Audio"
+      ],
+      "api": null,
+      "status": "verified",
+      "verifiedAt": "2026-10-30",
+      "sourceIds": [
+        "stable-pricing"
+      ],
+      "plans": [
+        {
+          "id": "stable-free",
+          "name": "Free",
+          "amount": 0,
+          "billing": "free",
+          "currency": "USD",
+          "pricingModels": [
+            "free",
+            "freemium",
+            "credit-based"
+          ],
+          "freeAllowance": "50 credits/month.",
+          "commercial": null,
+          "limits": [],
+          "sourceIds": [
+            "stable-pricing"
+          ],
+          "verifiedAt": "2026-10-30",
+          "status": "verified",
+          "components": [
+            {
+              "id": "stable-free-gen",
+              "unit": "generation",
+              "unitSize": 1,
+              "rate": null,
+              "included": null,
+              "creditAllowance": 50,
+              "creditsPerUnit": null,
+              "allowancePeriod": "month",
+              "model": "",
+              "resolution": "",
+              "quality": "",
+              "durations": [],
+              "maxDuration": null,
+              "note": "Confirm actual credits per generation before estimating."
+            }
+          ],
+          "features": [
+            "text-to-music",
+            "instrumental-generation"
+          ]
+        },
+        {
+          "id": "stable-entry",
+          "name": "Entry paid plan",
+          "amount": 12,
+          "billing": "monthly",
+          "currency": "USD",
+          "pricingModels": [
+            "monthly",
+            "credit-based"
+          ],
+          "freeAllowance": "",
+          "commercial": null,
+          "limits": [
+            "660 credits/month; paid generation length up to 6 minutes.",
+            "Vendor generation counts are approximate; provide actual consumption to estimate."
+          ],
+          "sourceIds": [
+            "stable-pricing"
+          ],
+          "verifiedAt": "2026-10-30",
+          "status": "verified",
+          "components": [
+            {
+              "id": "stable-gen",
+              "unit": "generation",
+              "unitSize": 1,
+              "rate": null,
+              "included": null,
+              "creditAllowance": 660,
+              "creditsPerUnit": null,
+              "allowancePeriod": "month",
+              "model": "",
+              "resolution": "",
+              "quality": "",
+              "durations": [],
+              "maxDuration": 360,
+              "note": "No exact unit price inferred from approximate generation counts."
+            }
+          ],
+          "features": [
+            "text-to-music",
+            "instrumental-generation"
+          ]
+        }
+      ]
+    }
+  ],
+  "alternatives": [
+    {
+      "id": "midjourney--flux-schnell",
+      "original": "midjourney",
+      "alternative": "flux-schnell",
+      "similarityType": "shared-function",
+      "featureMatch": [
+        "text-to-image"
+      ],
+      "priceAdvantage": "No recurring subscription. GPU-time and per-image quotas are not directly equivalent; compare actual image usage.",
+      "scenario": "Occasional text-to-image generation through an API.",
+      "reason": "Shared text-to-image capability; pay per output instead of a recurring subscription.",
+      "difference": "API workflow rather than the Midjourney workspace; output quality has not been benchmarked.",
+      "status": "verified",
+      "verifiedAt": "2026-10-30",
+      "sourceIds": [
+        "midjourney-plans",
+        "replicate-flux"
+      ]
+    },
+    {
+      "id": "runway--kling-via-replicate",
+      "original": "runway",
+      "alternative": "kling-via-replicate",
+      "similarityType": "shared-function",
+      "featureMatch": [
+        "image-to-video"
+      ],
+      "priceAdvantage": "No monthly subscription; savings depend on duration, resolution and the Runway plan.",
+      "scenario": "Short image-to-video clips with known duration and resolution.",
+      "reason": "Both support animating a starting image; the alternative has published per-second charges.",
+      "difference": "Different models and editing workflows. Quality parity is not established.",
+      "status": "verified",
+      "verifiedAt": "2026-10-30",
+      "sourceIds": [
+        "runway-plans",
+        "runway-credits",
+        "runway-api",
+        "replicate-kling"
+      ]
+    },
+    {
+      "id": "elevenlabs--cartesia",
+      "original": "elevenlabs",
+      "alternative": "cartesia",
+      "similarityType": "shared-function",
+      "featureMatch": [
+        "text-to-speech",
+        "voice-cloning"
+      ],
+      "priceAdvantage": "Use the current matched monthly plans below; the entry fee difference is not a guarantee of workload savings.",
+      "scenario": "Character-based TTS with instant voice cloning on paid plans.",
+      "reason": "Both advertise TTS and paid-plan instant cloning. Compare monthly fees and model-specific character allowances.",
+      "difference": "Voice library, cloning and output characteristics differ; no quality score is assigned.",
+      "status": "verified",
+      "verifiedAt": "2026-10-30",
+      "sourceIds": [
+        "elevenlabs-pricing",
+        "cartesia-pricing"
+      ]
+    },
+    {
+      "id": "elevenlabs--google-cloud-tts",
+      "original": "elevenlabs",
+      "alternative": "google-cloud-tts",
+      "similarityType": "shared-function",
+      "featureMatch": [
+        "text-to-speech"
+      ],
+      "priceAdvantage": "Pay-as-you-go with a free allowance; compare only character-based stock-voice workloads.",
+      "scenario": "Standard stock-voice speech synthesis through an API.",
+      "reason": "Shared text-to-speech function; Google publishes a character allowance and usage rate.",
+      "difference": "This offer is for Standard stock voices, not a substitute for ElevenLabs voice cloning.",
+      "status": "verified",
+      "verifiedAt": "2026-10-30",
+      "sourceIds": [
+        "elevenlabs-pricing",
+        "google-tts"
+      ]
+    },
+    {
+      "id": "cartesia--elevenlabs",
+      "original": "cartesia",
+      "alternative": "elevenlabs",
+      "similarityType": "shared-function",
+      "featureMatch": [
+        "text-to-speech",
+        "voice-cloning"
+      ],
+      "priceAdvantage": "A free TTS plan is available; compare paid-plan allowances and feature restrictions separately.",
+      "scenario": "Explore another voice library and cloning workflow.",
+      "reason": "Shared TTS and cloning functions; compare allowances for the selected model.",
+      "difference": "This direction is explicitly curated and is not asserted to be cheaper.",
+      "status": "verified",
+      "verifiedAt": "2026-10-30",
+      "sourceIds": [
+        "cartesia-pricing",
+        "elevenlabs-pricing"
+      ]
+    },
+    {
+      "id": "suno--stable-audio",
+      "original": "suno",
+      "alternative": "stable-audio",
+      "similarityType": "shared-function",
+      "featureMatch": [
+        "text-to-music"
+      ],
+      "priceAdvantage": "Free allowance available; paid monthly and annual prices must not be directly ranked.",
+      "scenario": "Instrumental music or audio generation.",
+      "reason": "Both provide text-to-music generation; Stable Audio offers a free monthly credit allowance.",
+      "difference": "Instrumental/audio workflow is not equivalent to Suno vocal songs, editing or download rights.",
+      "status": "verified",
+      "verifiedAt": "2026-10-30",
+      "sourceIds": [
+        "suno-pricing",
+        "suno-v6",
+        "stable-pricing"
+      ]
+    }
+  ]
+}

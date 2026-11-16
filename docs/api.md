@@ -1,5 +1,7 @@
 # AI Price Compare Web - API 文档
 
+> 新版目录、兼容迁移和启动方式请先查看 [运营说明](./catalog-operations.md)。本文保留原有平台/模型接口资料；当前数据库结构以 migrations 为准。
+
 ## 基础信息
 
 - **基础 URL**: `https://your-domain.workers.dev/api`

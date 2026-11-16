@@ -1,195 +1,62 @@
-// OpenPriceHub · 首页 (文档 §5)
-
-import React from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+// Incremental home: existing visual system, usable decision paths, explicit sample data.
+import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import type { ToolCategory } from '../../shared/types';
 import { useT, useLocale, useLocalePath } from '../i18n';
-import { getPopular, useSponsored, usePriceUpdates, useGuides } from '../data';
-import { SearchBar } from '../components/SearchBar';
+import { useTools, usePriceUpdates, useGuides } from '../data';
+import { HomeSearch } from '../components/HomeSearch';
 import { ScenarioCard } from '../components/ScenarioCard';
 import { ToolCard } from '../components/ToolCard';
-import { SponsoredCard } from '../components/SponsoredCard';
-import { ConfidenceBadge } from '../components/Badges';
-import { SCENE_TEXT } from '../lib/scene';
-
-function SectionHeader({ title, action }: { title: string; action?: React.ReactNode }) {
-  return (
-    <div className="mb-4 flex items-end justify-between gap-4">
-      <h2 className="font-display text-xl font-bold text-ink sm:text-2xl">{title}</h2>
-      {action}
-    </div>
-  );
-}
-
+import { AdvertisementSlot } from '../components/AdvertisementSlot';
+const categories: { id: ToolCategory; title: string; type: string; path: string; desc: string }[] = [
+  { id: 'image', title: 'nav.image', type: 'image', path: '/tools?category=image', desc: 'home.scenes.image.desc' },
+  { id: 'video', title: 'nav.video', type: 'video', path: '/tools?category=video', desc: 'home.scenes.video.desc' },
+  { id: 'voice', title: 'nav.voiceTools', type: 'tts', path: '/compare/tts', desc: 'home.voiceDesc' },
+  { id: 'music', title: 'nav.musicTools', type: 'music', path: '/compare/music', desc: 'home.musicDesc' },
+  { id: 'llm-api', title: 'nav.llmApi', type: 'api', path: '/tools?category=llm-api', desc: 'home.scenes.llm.desc' },
+];
 function Home() {
-  const t = useT();
-  const locale = useLocale();
-  const lp = useLocalePath();
-  const navigate = useNavigate();
+  const t = useT(), locale = useLocale(), lp = useLocalePath();
+  const [category, setCategory] = useState<ToolCategory>('image');
+  const tools = useTools().data, updates = usePriceUpdates().data, guides = useGuides().data;
+  const visible = tools.filter(tool => tool.toolCategory === category).slice(0, 4);
+  const selected = categories.find(c => c.id === category)!;
+  return <div className="space-y-10 sm:space-y-12" data-testid="home-content">
+    <section className="pt-2 text-center sm:pt-4">
+      <h1 className="mx-auto max-w-3xl font-display text-3xl font-bold leading-tight tracking-tight text-ink sm:text-5xl">{t('home.heroTitle')}</h1>
+      <p className="mx-auto mt-4 max-w-2xl text-base text-ink-2 sm:text-lg">{t('home.heroSubtitle')}</p>
+      <div className="mx-auto mt-6 max-w-2xl"><HomeSearch tools={tools} /><p className="mt-2 text-xs text-ink-2">{t('home.searchHint')}</p></div>
+      <div className="mx-auto mt-5 flex max-w-2xl flex-col justify-center gap-3 sm:flex-row">
+        <Link to={lp('/discovery-lab')} className="btn-primary justify-center">{t('nav.discoveryLab')} <span className="rounded bg-white/20 px-1.5 py-0.5 text-xs">{t('home.mockExperience')}</span> →</Link>
+        <Link to={lp('/calculator')} className="btn-secondary justify-center">{t('nav.calculator')} →</Link>
+      </div>
+    </section>
 
-  const sponsored = useSponsored().data;
-  const updates = usePriceUpdates().data;
-  const guides = useGuides().data;
+    <section aria-label={t('home.scenesTitle')}><h2 className="mb-4 font-display text-xl font-bold">{t('home.scenesTitle')}</h2><div className="grid grid-cols-2 gap-3 lg:grid-cols-5">
+      {categories.map(c => <ScenarioCard key={c.id} compact category={c.id} title={t(c.title)} desc={t(c.desc)} to={lp(c.path)} />)}
+    </div></section>
 
-  const groups: { key: 'image' | 'video' | 'llm'; cat: ToolCategory; title: string }[] = [
-    { key: 'image', cat: 'image', title: t('home.popular.image') },
-    { key: 'video', cat: 'video', title: t('home.popular.video') },
-    { key: 'llm', cat: 'llm-api', title: t('home.popular.llm') },
-  ];
+    <section aria-label={t('home.decisionTitle')} className="grid gap-4 md:grid-cols-2">
+      <Link to={lp('/discovery-lab')} className="card card-hover border-primary-100 bg-primary-50/60 p-5 sm:p-6"><span className="eyebrow">{t('home.finderEyebrow')}</span><h2 className="mt-2 font-display text-xl font-bold">{t('nav.discoveryLab')}</h2><p className="mt-2 text-sm text-ink-2">{t('home.finderDesc')}</p><p className="mt-3 text-xs text-warn">{t('home.finderNotice')}</p><span className="mt-4 block text-sm font-semibold text-primary">{t('home.startFinding')} →</span></Link>
+      <div className="card p-5 sm:p-6"><span className="eyebrow">{t('home.calculatorEyebrow')}</span><h2 className="mt-2 font-display text-xl font-bold"><Link className="hover:text-primary" to={lp('/calculator')}>{t('nav.calculator')}</Link></h2><p className="mt-2 text-sm text-ink-2">{t('home.calculatorDesc')}</p><div className="mt-4 flex flex-wrap gap-2">{categories.map(c => <Link key={c.id} to={lp(`/calculator?type=${c.type}`)} className="chip hover:border-primary" data-testid={`home-calc-${c.id}`}>{t(c.title)} →</Link>)}</div></div>
+    </section>
 
-  const doSearch = (q: string) => {
-    if (q) navigate(lp(`/tools?q=${encodeURIComponent(q)}`));
-  };
+    <AdvertisementSlot placement="home-primary" />
 
-  return (
-    <div className="space-y-16">
-      {/* ---- Hero ---- */}
-      <section className="animate-fade-up pt-4 text-center">
-        <h1 className="mx-auto max-w-3xl font-display text-3xl font-bold leading-tight tracking-tight text-ink sm:text-5xl">
-          {t('home.heroTitle')}
-        </h1>
-        <p className="mx-auto mt-4 max-w-2xl text-base text-ink-2 sm:text-lg">{t('home.heroSubtitle')}</p>
-        <div className="mx-auto mt-8 max-w-2xl">
-          <SearchBar size="lg" placeholder={t('home.searchPlaceholder')} onSearch={doSearch} />
-          <div className="mt-3 flex flex-wrap items-center justify-center gap-2 text-sm text-ink-2">
-            <span className="text-ink-2/70">{t('home.trendingLabel')}:</span>
-            {(t('home.trending') as string[]).map((w) => (
-              <button key={w} onClick={() => doSearch(w)} className="chip !py-1">
-                {w}
-              </button>
-            ))}
-          </div>
-        </div>
-      </section>
+    <section data-testid="home-catalog" aria-labelledby="home-catalog-title">
+      <div className="mb-3 flex flex-wrap items-center justify-between gap-3"><h2 id="home-catalog-title" className="font-display text-xl font-bold sm:text-2xl">{t('home.catalogTitle')}</h2><Link to={lp(selected.path)} className="text-sm font-semibold text-primary">{t('common.viewAll')} →</Link></div>
+      <p role="note" className="mb-4 rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-950">{t('home.catalogNotice')}</p>
+      <div className="mb-4 flex flex-wrap gap-2" role="group" aria-label={t('home.catalogCategories')}>{categories.map(c => <button key={c.id} type="button" className={`chip ${category === c.id ? 'chip-active' : ''}`} aria-pressed={category === c.id} onClick={() => setCategory(c.id)}>{t(c.title)}</button>)}</div>
+      {visible.length ? <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">{visible.map(tool => <ToolCard key={tool.id} tool={tool} preview />)}</div> : <div className="card p-6 text-center"><p className="text-ink-2">{t('home.noCategoryPrices')}</p><Link className="btn-secondary mt-4" to={lp(selected.path)}>{t('home.manualCategoryCompare')} →</Link></div>}
+    </section>
 
-      {/* ---- 三大场景 ---- */}
-      <section>
-        <div className="grid gap-4 md:grid-cols-3">
-          <ScenarioCard category="image" title={t('home.scenes.image.title')} desc={t('home.scenes.image.desc')} to={lp('/tools?category=image')} />
-          <ScenarioCard category="video" title={t('home.scenes.video.title')} desc={t('home.scenes.video.desc')} to={lp('/tools?category=video')} />
-          <ScenarioCard category="llm-api" title={t('home.scenes.llm.title')} desc={t('home.scenes.llm.desc')} to={lp('/tools?category=llm-api')} />
-        </div>
-      </section>
+    {!!updates.length && <section aria-labelledby="home-updates-title"><h2 id="home-updates-title" className="mb-3 font-display text-xl font-bold">{t('home.priceRecordsTitle')}</h2><p className="mb-4 text-sm text-ink-2">{t('home.priceRecordsNotice')}</p><div className="overflow-hidden rounded-card border border-line bg-surface">{updates.slice(0, 3).map(u => <div key={u.id} className="flex flex-wrap items-center gap-2 border-b border-line-2 px-4 py-3 last:border-b-0"><div className="min-w-0 flex-1"><span className="font-medium">{u.toolName}</span><p className="text-xs text-ink-2">{t('home.priceRecordDesc')}</p></div><span className="rounded bg-warn-soft px-2 py-1 text-xs text-warn">{t('home.sampleRecord')}</span><time dateTime={u.date} className="text-xs text-ink-2">{u.date}</time></div>)}</div></section>}
 
-      {/* ---- 成本计算器入口 ---- */}
-      <section className="overflow-hidden rounded-card border border-primary-100 bg-primary-50/60">
-        <div className="flex flex-col gap-6 p-6 sm:p-8 lg:flex-row lg:items-center lg:justify-between">
-          <div>
-            <span className="eyebrow">CALCULATOR</span>
-            <h2 className="mt-2 font-display text-2xl font-bold text-ink">{t('home.calcTitle')}</h2>
-            <p className="mt-2 max-w-xl text-ink-2">{t('home.calcSubtitle')}</p>
-          </div>
-          <div className="flex flex-col gap-3 sm:flex-row">
-            <Link to={lp('/calculator?type=image')} className="btn-secondary justify-start">🖼 {t('home.calc.image')}</Link>
-            <Link to={lp('/calculator?type=video')} className="btn-secondary justify-start">🎬 {t('home.calc.video')}</Link>
-            <Link to={lp('/calculator?type=api')} className="btn-secondary justify-start">⚡ {t('home.calc.api')}</Link>
-          </div>
-        </div>
-      </section>
+    <section aria-labelledby="home-guides-title"><h2 id="home-guides-title" className="mb-4 font-display text-xl font-bold">{t('home.guideTipsTitle')}</h2><div className="grid gap-4 md:grid-cols-3">{guides.map(g => <article className="card flex flex-col p-5" key={g.id}><h3 className="font-display font-semibold">{locale === 'en' ? g.titleEn ?? g.title : g.title}</h3><p className="mt-2 flex-1 text-sm text-ink-2">{t(g.category === 'image' ? 'home.imageTip' : g.category === 'video' ? 'home.videoTip' : 'home.apiTip')}</p><Link className="mt-4 text-sm font-semibold text-primary" to={lp(`/calculator?type=${g.category === 'llm-api' ? 'api' : g.category}`)}>{t('home.estimateUsage')} →</Link></article>)}</div></section>
 
-      {/* ---- Sponsored ---- */}
-      {sponsored.length > 0 && (
-        <section>
-          <SectionHeader title={t('home.sponsoredTitle')} />
-          <p className="-mt-2 mb-4 text-xs text-ink-2">{t('home.sponsoredNote')}</p>
-          <div className="grid gap-4 md:grid-cols-2">
-            {sponsored.map((s) => (
-              <SponsoredCard key={s.id} slot={s} />
-            ))}
-          </div>
-        </section>
-      )}
+    <section className="card flex flex-col items-start justify-between gap-4 p-5 sm:flex-row sm:items-center"><div><h2 className="font-display text-xl font-bold">{t('home.maintainTitle')}</h2><p className="mt-2 text-sm text-ink-2">{t('home.maintainDesc')}</p></div><Link to={lp('/calculator')} className="btn-secondary flex-none">{t('home.maintainCta')} →</Link></section>
 
-      {/* ---- 热门工具 (三组) ---- */}
-      {groups.map((g) => (
-        <section key={g.key}>
-          <SectionHeader
-            title={g.title}
-            action={
-              <Link to={lp(`/tools?category=${g.cat}`)} className={`text-sm font-semibold ${SCENE_TEXT[g.cat]}`}>
-                {t('common.viewAll')} →
-              </Link>
-            }
-          />
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {getPopular(g.cat, 4).map((tool) => (
-              <ToolCard key={tool.id} tool={tool} />
-            ))}
-          </div>
-        </section>
-      ))}
-
-      {/* ---- 热门对比 ---- */}
-      <section>
-        <SectionHeader title={t('home.hotCompareTitle')} />
-        <div className="grid gap-4 sm:grid-cols-2">
-          {(t('home.hotCompares') as { title: string; desc: string; tools: string }[]).map((c) => (
-            <Link key={c.title} to={lp(`/compare?tools=${c.tools}`)} className="card card-hover flex items-center gap-4 p-5">
-              <span className="flex h-10 w-10 flex-none items-center justify-center rounded-lg bg-surface-2 text-ink-2">
-                <svg className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24" aria-hidden>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M7 8H4l3-3m10 6h3l-3 3M4 5h13M20 11H7" />
-                </svg>
-              </span>
-              <div className="min-w-0 flex-1">
-                <div className="truncate font-display font-semibold text-ink">{c.title}</div>
-                <div className="mt-0.5 truncate text-sm text-ink-2">{c.desc}</div>
-              </div>
-              <span className="flex-none text-primary">→</span>
-            </Link>
-          ))}
-        </div>
-      </section>
-
-      {/* ---- 最新价格更新 ---- */}
-      <section>
-        <SectionHeader title={t('home.latestTitle')} />
-        <div className="overflow-hidden rounded-card border border-line bg-surface">
-          {updates.map((u, i) => (
-            <div key={u.id} className={`flex items-center gap-4 px-5 py-3.5 ${i > 0 ? 'border-t border-line-2' : ''}`}>
-              <div className="min-w-0 flex-1">
-                <span className="font-medium text-ink">{u.toolName}</span>
-                <span className="ml-2 text-sm text-ink-2">{locale === 'en' && u.summaryEn ? u.summaryEn : u.summary}</span>
-              </div>
-              <ConfidenceBadge status={u.status} />
-              <span className="hidden w-24 flex-none text-right text-xs text-ink-2 sm:block">{u.date}</span>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* ---- 投稿入口 ---- */}
-      <section className="rounded-card border border-line bg-surface p-6 sm:p-8">
-        <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <h2 className="font-display text-xl font-bold text-ink">{t('home.submitTitle')}</h2>
-            <p className="mt-1 text-ink-2">{t('home.submitDesc')}</p>
-          </div>
-          <Link to={lp('/submit')} className="btn-primary flex-none">
-            {t('home.submitCta')} →
-          </Link>
-        </div>
-      </section>
-
-      {/* ---- 精选指南 ---- */}
-      <section>
-        <SectionHeader title={t('home.guidesTitle')} />
-        <div className="grid gap-4 md:grid-cols-3">
-          {guides.map((g) => (
-            <Link key={g.id} to={lp(`/guides/${g.slug}`)} className="card card-hover flex flex-col p-5">
-              <span className={`text-xs font-semibold uppercase tracking-label ${g.category !== 'general' ? SCENE_TEXT[g.category] : 'text-ink-2'}`}>
-                {g.category !== 'general' ? t(`categories.${g.category}`) : 'GUIDE'}
-              </span>
-              <h3 className="mt-2 font-display font-semibold leading-snug text-ink">
-                {locale === 'en' && g.titleEn ? g.titleEn : g.title}
-              </h3>
-              {g.excerpt && <p className="mt-2 flex-1 text-sm text-ink-2">{g.excerpt}</p>}
-              <span className="mt-4 text-sm font-semibold text-primary">{t('common.viewDetails')} →</span>
-            </Link>
-          ))}
-        </div>
-      </section>
-    </div>
-  );
+    <AdvertisementSlot placement="home-secondary" compact />
+  </div>;
 }
-
 export default Home;

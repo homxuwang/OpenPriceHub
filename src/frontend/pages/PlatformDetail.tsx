@@ -1,6 +1,5 @@
 // AI Price Compare Web - 平台详情页
 
-import React from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { CATEGORY_LABELS, PRICING_MODE_LABELS, UNIT_TYPE_LABELS } from '../../shared/constants';
 import { usePlatform } from '../hooks/useApi';

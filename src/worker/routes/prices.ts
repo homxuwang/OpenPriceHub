@@ -39,8 +39,8 @@ export async function queryPrices(
   query += ' ORDER BY m.name, p.name';
 
   const rules = bindParams.length > 0
-    ? await db.prepare(query).bind(...bindParams).all()
-    : await db.prepare(query).all();
+    ? await db.prepare(query).bind(...bindParams).all<any>().then(result => result.results)
+    : await db.prepare(query).all<any>().then(result => result.results);
 
   const results = [];
 
@@ -49,7 +49,7 @@ export async function queryPrices(
     const plans = await db
       .prepare('SELECT * FROM plans WHERE platform_id = ?')
       .bind(rule.platform_id)
-      .all();
+      .all<any>().then(result => result.results);
 
     const unitDefinitions: UnitDefinition[] = JSON.parse(rule.unit_definitions);
 
@@ -132,7 +132,7 @@ export async function comparePrices(
   const models = await db
     .prepare(`SELECT * FROM models WHERE id IN (${placeholders})`)
     .bind(...modelIds)
-    .all();
+    .all<any>().then(result => result.results);
 
   const comparisons = [];
 
@@ -152,7 +152,7 @@ export async function comparePrices(
       bindParams.push(...platformIds);
     }
 
-    const rules = await db.prepare(query).bind(...bindParams).all();
+    const rules = await db.prepare(query).bind(...bindParams).all<any>().then(result => result.results);
 
     const comparisonResults = [];
 
@@ -161,7 +161,7 @@ export async function comparePrices(
       const plans = await db
         .prepare('SELECT * FROM plans WHERE platform_id = ?')
         .bind(rule.platform_id)
-        .all();
+        .all<any>().then(result => result.results);
 
       const unitDefinitions: UnitDefinition[] = JSON.parse(rule.unit_definitions);
 

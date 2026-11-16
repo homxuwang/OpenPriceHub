@@ -20,11 +20,25 @@
     "rootDir": "./src",
     "baseUrl": ".",
     "paths": {
-      "@shared/*": ["src/shared/*"],
-      "@worker/*": ["src/worker/*"],
-      "@frontend/*": ["src/frontend/*"]
-    }
+      "@shared/*": [
+        "src/shared/*"
+      ],
+      "@worker/*": [
+        "src/worker/*"
+      ],
+      "@frontend/*": [
+        "src/frontend/*"
+      ]
+    },
+    "types": [
+      "vite/client"
+    ]
   },
-  "include": ["src/**/*"],
-  "exclude": ["node_modules", "dist"]
+  "include": [
+    "src/**/*"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist"
+  ]
 }

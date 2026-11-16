@@ -1,10 +1,14 @@
+import { legacyDecimalText } from '../../shared/creditPurchase';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { completeQuickSample } from '../../shared/calculatorSamples';
+import { CalculatorImportPreview } from '../components/CalculatorImportPreview';
+import { exportCalculator, previewCalculatorImport, quickToDetailed, readDetailedForTransfer, type ImportPreview } from '../../shared/calculatorIo';
+import type { DetailedCompareState } from '../../shared/detailedCompare';
 import { useLocale } from '../i18n';
 import {
   calculateManualComparison,
   createManualItem,
   createManualSampleState,
-  MANUAL_CURRENCIES,
   normalizeManualState,
   unitTypesForCategory,
   type ManualCategory,
@@ -12,7 +16,13 @@ import {
   type ManualPriceItem,
   type ManualPricingMode,
 } from '../../shared/manualCompare';
-import type { Scenario, UnitDefinition } from '../../shared/types';
+import ManualComparisonResults, { ComparisonBasisControl, ComparisonMetricControl, MANUAL_CATEGORY_LABELS } from '../components/ManualComparisonResults';
+import { CalculatorScenarioFields } from '../components/CalculatorScenarioFields';
+import { CalculatorFxEditor } from '../components/CalculatorFxEditor';
+import { UnitRulesEditor, BillingTermsEditor, ExactPriceInput } from '../components/UnitRulesEditor';
+import { CreditPurchaseFields, PurchaseCycleField } from '../components/CreditPurchaseFields';
+import type { ComparisonBasis, ComparisonMetric } from '../../shared/manualComparisonGroups';
+import { UNIT_LABELS, type ManualUnitDefinition as UnitDefinition } from '../../shared/manualUnits';
 
 const STORAGE_KEY = 'oph.manual-compare.v1';
 
@@ -34,62 +44,21 @@ function initialState() {
   return createManualSampleState(createId(), createId());
 }
 
-const CATEGORY_LABELS = {
-  zh: { text: '文本', image: '图片', video: '视频', audio: '音频' },
-  en: { text: 'Text', image: 'Image', video: 'Video', audio: 'Audio' },
-};
+const CATEGORY_LABELS = MANUAL_CATEGORY_LABELS;
 const MODE_LABELS = {
   zh: { plan_credit_based: '积分换算', direct_price_based: '直接价格' },
   en: { plan_credit_based: 'Plan credits', direct_price_based: 'Direct price' },
 };
-const UNIT_LABELS = {
-  zh: {
-    per_1k_input_tokens: '每 1K 输入 tokens',
-    per_1k_output_tokens: '每 1K 输出 tokens',
-    per_image: '每张图片',
-    per_second: '每秒',
-    per_minute: '每分钟',
-  },
-  en: {
-    per_1k_input_tokens: 'Per 1K input tokens',
-    per_1k_output_tokens: 'Per 1K output tokens',
-    per_image: 'Per image',
-    per_second: 'Per second',
-    per_minute: 'Per minute',
-  },
-};
 
-function NumberField({
-  label,
-  value,
-  onChange,
-  step = 'any',
-}: {
-  label: string;
-  value: number;
-  onChange: (value: number) => void;
-  step?: string;
-}) {
-  return (
-    <div>
-      <label className="label">{label}</label>
-      <input
-        className="input tabular"
-        type="number"
-        min="0"
-        step={step}
-        value={value}
-        onChange={(event) => onChange(Math.max(0, Number(event.target.value) || 0))}
-      />
-    </div>
-  );
-}
-
-function ManualCompare() {
+function ManualCompare({ category = null, onSavedToDetailed }: { category?: ManualCategory | null; onSavedToDetailed?:()=>void }) {
   const locale = useLocale();
   const zh = locale === 'zh';
   const tr = (chinese: string, english: string) => zh ? chinese : english;
   const [state, setState] = useState<ManualCompareState>(initialState);
+  const [metric, setMetric] = useState<ComparisonMetric>('scenario');
+  const [basis, setBasis] = useState<ComparisonBasis>('same_unit');
+  const [importPreview,setImportPreview]=useState<ImportPreview<ManualCompareState>|null>(null);
+  const [transferPreview,setTransferPreview]=useState<ImportPreview<DetailedCompareState>|null>(null);
   const [message, setMessage] = useState('');
   const importRef = useRef<HTMLInputElement>(null);
 
@@ -101,13 +70,8 @@ function ManualCompare() {
     }
   }, [state]);
 
-  const results = useMemo(() => state.items
-    .map((item) => calculateManualComparison(item, state.scenario, state.rates, state.targetCurrency))
-    .sort((a, b) => {
-      if (a.scenarioCost === null) return 1;
-      if (b.scenarioCost === null) return -1;
-      return a.scenarioCost - b.scenarioCost;
-    }), [state]);
+  const visibleItems = state.items.filter(item => !category || item.category === category);
+  const results = useMemo(() => state.items.filter(item => !category || item.category === category).map((item) => calculateManualComparison(item, state.scenario, state.rates, state.targetCurrency, undefined, undefined, state.ratesExact,state.rateRatios)), [state, category]);
 
   const updateItem = (id: string, patch: Partial<ManualPriceItem>) => {
     setState((current) => ({
@@ -116,28 +80,17 @@ function ManualCompare() {
     }));
   };
 
-  const updateScenario = (key: keyof Scenario, value: number) => {
-    setState((current) => ({ ...current, scenario: { ...current.scenario, [key]: value } }));
-  };
-
   const changeCategory = (item: ManualPriceItem, category: ManualCategory) => {
     updateItem(item.id, {
-      category,
-      unitDefinitions: unitTypesForCategory(category).map((unitType) => ({ unitType, value: null })),
-    });
-  };
-
-  const updateUnit = (item: ManualPriceItem, unitType: UnitDefinition['unitType'], value: number) => {
-    updateItem(item.id, {
-      unitDefinitions: item.unitDefinitions.map((unit) =>
-        unit.unitType === unitType ? { ...unit, value } : unit),
+      category, selectedUnit: item.category === 'audio' && ['tts', 'music'].includes(category) ? item.selectedUnit : undefined,
+      unitDefinitions: item.category === 'audio' && ['tts', 'music'].includes(category) ? item.unitDefinitions : unitTypesForCategory(category).map((unitType) => ({ unitType, value: null })),
     });
   };
 
   const addItem = () => {
     setState((current) => ({
       ...current,
-      items: [...current.items, createManualItem(createId(), current.items.length + 1)],
+      items: [...current.items, createManualItem(createId(), current.items.length + 1, category ?? 'image')],
     }));
   };
 
@@ -147,7 +100,7 @@ function ManualCompare() {
   };
 
   const exportJson = () => {
-    const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
+    const blob = new Blob([JSON.stringify(exportCalculator('quick',state), null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
@@ -162,17 +115,17 @@ function ManualCompare() {
     event.target.value = '';
     if (!file) return;
     try {
-      const normalized = normalizeManualState(JSON.parse(await file.text()));
-      if (!normalized) throw new Error('Invalid data');
-      setState(normalized);
-      setMessage(tr('导入成功。', 'Import complete.'));
-    } catch {
-      setMessage(tr('导入失败：文件格式无效。', 'Import failed: invalid file format.'));
+      if(file.size>2*1024*1024)throw Error('File exceeds 2 MB / 文件超过 2 MB');
+      setImportPreview(previewCalculatorImport(JSON.parse(await file.text()),'quick'));
+    } catch (error) {
+      setMessage(tr('导入失败：', 'Import failed: ')+String(error instanceof Error?error.message:error));
     }
   };
 
-  const formatCost = (value: number | null, currency: string) =>
-    value === null ? '—' : `${value.toLocaleString(undefined, { maximumFractionDigits: 6 })} ${currency}`;
+  const confirmImport=()=>{if(!importPreview)return;try{localStorage.setItem('oph.manual-compare.import-backup',JSON.stringify(state));localStorage.setItem(STORAGE_KEY,JSON.stringify(importPreview.data));setState(importPreview.data);setImportPreview(null);setMessage(tr('导入成功，已备份上一版。','Imported; previous state backed up.'));}catch{setMessage(tr('存储失败，未覆盖当前数据。','Storage failed; current data was not replaced.'));}};
+  const prepareTransfer=()=>{try{const converted=quickToDetailed(state,readDetailedForTransfer());setTransferPreview(previewCalculatorImport(exportCalculator('detailed',converted),'detailed'));}catch(error){setMessage(String(error instanceof Error?error.message:error));}};
+  const confirmTransfer=()=>{if(!transferPreview)return;try{const old=localStorage.getItem('oph.detailed-compare.v1');if(old)localStorage.setItem('oph.detailed-compare.import-backup',old);localStorage.setItem('oph.detailed-compare.v1',JSON.stringify(transferPreview.data));setTransferPreview(null);onSavedToDetailed?.();setMessage(tr('已追加到详细模式。','Saved to detailed mode.'));}catch{setMessage(tr('存储失败，未覆盖详细数据。','Storage failed; detailed data was not replaced.'));}};
+
 
   return (
     <div className="space-y-6">
@@ -192,11 +145,15 @@ function ManualCompare() {
         <div className="flex flex-wrap gap-2">
           <button className="btn-secondary" type="button" onClick={loadSample}>{tr('载入示例', 'Load sample')}</button>
           <button className="btn-secondary" type="button" onClick={() => importRef.current?.click()}>{tr('导入 JSON', 'Import JSON')}</button>
+          <button className="btn-secondary" type="button" onClick={()=>{setImportPreview(previewCalculatorImport(exportCalculator('quick',completeQuickSample()),'quick'));}}>{tr('载入完整计价示例','Load full pricing examples')}</button>
           <button className="btn-secondary" type="button" onClick={exportJson}>{tr('导出 JSON', 'Export JSON')}</button>
+          <button className="btn-secondary" type="button" onClick={prepareTransfer}>{tr('保存到详细模式','Save to detailed mode')}</button>
+          <button className="btn-ghost" type="button" onClick={()=>{try{const raw=localStorage.getItem('oph.manual-compare.import-backup');if(!raw)throw Error(tr('暂无备份。','No backup available.'));setImportPreview(previewCalculatorImport(JSON.parse(raw),'quick'));}catch(error){setMessage(String(error instanceof Error?error.message:error));}}}>{tr('预览上次备份','Preview previous backup')}</button>
           <input ref={importRef} className="hidden" type="file" accept="application/json" onChange={importJson} />
         </div>
       </header>
 
+      <p role="note" className="rounded-lg border border-amber-300 bg-amber-50 p-3 text-sm text-amber-950">{tr('示例价格为模拟数据；手动录入的数据未经官方核验。', 'Sample prices are simulated; manually entered prices are not officially verified.')}</p>
       {message && (
         <div className="rounded-lg border border-primary-200 bg-primary-50 px-4 py-3 text-sm text-primary-700" role="status">
           {message}
@@ -205,7 +162,7 @@ function ManualCompare() {
 
       <div className="grid items-start gap-6 xl:grid-cols-[minmax(0,1.5fr)_360px]">
         <div className="space-y-4">
-          {state.items.map((item, index) => (
+          {visibleItems.map((item, index) => (
             <section className="card p-5" key={item.id}>
               <div className="mb-5 flex items-start justify-between gap-3">
                 <div>
@@ -250,7 +207,7 @@ function ManualCompare() {
                 <div>
                   <label className="label">{tr('计费模式', 'Pricing mode')}</label>
                   <select className="input" value={item.pricingMode}
-                    onChange={(event) => updateItem(item.id, { pricingMode: event.target.value as ManualPricingMode })}>
+                    onChange={(event) => updateItem(item.id, { pricingMode: event.target.value as ManualPricingMode, billingTerms:undefined })}>
                     {(Object.keys(MODE_LABELS[locale]) as ManualPricingMode[]).map((mode) => (
                       <option value={mode} key={mode}>{MODE_LABELS[locale][mode]}</option>
                     ))}
@@ -260,10 +217,14 @@ function ManualCompare() {
                   <label className="label">{tr('原始币种', 'Source currency')}</label>
                   <select className="input" value={item.currency}
                     onChange={(event) => updateItem(item.id, { currency: event.target.value })}>
-                    {MANUAL_CURRENCIES.map((currency) => <option value={currency} key={currency}>{currency}</option>)}
+                    {Object.keys(state.rates).map((currency) => <option value={currency} key={currency}>{currency}</option>)}
                   </select>
                 </div>
 
+                <div><label className="label">{tr('可比参数（必填才排名）', 'Comparable parameters (required for ranking)')}</label><input aria-label={`Parameters ${item.id}`} className="input" placeholder={tr('例如：1024×1024，标准质量', 'e.g. 1024×1024, standard quality')} value={item.parameters ?? ''} onChange={e => updateItem(item.id, { parameters: e.target.value })} /></div>
+                <div><label className="label">{tr('共同场景（跨模型比较时填写）', 'Shared task (for comparison across models)')}</label><input aria-label={`Shared task ${item.id}`} className="input" value={item.comparisonScenario ?? ''} onChange={e => updateItem(item.id, { comparisonScenario: e.target.value })} /></div>
+                {item.category!=='text' && <div><label className="label">{tr('本次采用的计价单位', 'Pricing unit used for this quote')}</label><select aria-label={`Time unit ${item.id}`} className="input" value={item.selectedUnit ?? ''} onChange={e => updateItem(item.id, { selectedUnit: e.target.value ? e.target.value as UnitDefinition['unitType'] : undefined })}><option value="">{tr('自动（仅一个已填写单价时）', 'Automatic (only one populated rate)')}</option>{unitTypesForCategory(item.category).map(u => <option key={u} value={u}>{UNIT_LABELS[locale][u]}</option>)}</select></div>}
+                {item.category==='text'&&<label className="label">{tr('Token 分项或原始积分用量','Token components or raw credits')}<select className="input" value={item.selectedUnit==='per_credit'?'per_credit':''} onChange={e=>updateItem(item.id,{selectedUnit:e.target.value==='per_credit'?'per_credit':undefined})}><option value="">{tr('按 Token 分项','Token components')}</option><option value="per_credit">{tr('按原始积分','Raw credits')}</option></select></label>}
                 {item.pricingMode === 'plan_credit_based' && (
                   <>
                     <div>
@@ -271,36 +232,31 @@ function ManualCompare() {
                       <input className="input" value={item.planName}
                         onChange={(event) => updateItem(item.id, { planName: event.target.value })} />
                     </div>
-                    <NumberField label={tr('套餐价格', 'Plan price')} value={item.planPrice}
-                      onChange={(planPrice) => updateItem(item.id, { planPrice })} />
-                    <NumberField label={tr('套餐积分数', 'Plan credits')} value={item.creditAmount}
-                      onChange={(creditAmount) => updateItem(item.id, { creditAmount })} />
+                    <ExactPriceInput label={tr('套餐价格','Plan price')} value={item.planPriceExact??legacyDecimalText(item.planPrice)} onChange={planPriceExact=>updateItem(item.id,{planPriceExact,planPrice:Number(planPriceExact)||0})}/>
+                    <ExactPriceInput label={tr('套餐积分数','Plan credits')} value={item.creditAmountExact??legacyDecimalText(item.creditAmount)} onChange={creditAmountExact=>updateItem(item.id,{creditAmountExact,creditAmount:Number(creditAmountExact)||0})}/>
+                    <PurchaseCycleField value={item.purchaseCycle} onChange={purchaseCycle => updateItem(item.id, { purchaseCycle })} zh={zh} prefix={item.id} />
+                    <div><label className="label">{tr('套餐积分池名称（可选）', 'Plan credit pool name (optional)')}</label><input aria-label={`Credit pool ${item.id}`} className="input" value={item.creditPool ?? ''} onChange={e => updateItem(item.id, { creditPool: e.target.value })} /></div>
+                    <CreditPurchaseFields terms={item.purchaseTerms} onChange={purchaseTerms => updateItem(item.id, { purchaseTerms })} zh={zh} prefix={item.id} />
                   </>
                 )}
 
-                {item.unitDefinitions.map((unit) => (
-                  <NumberField
-                    key={unit.unitType}
-                    label={item.pricingMode === 'plan_credit_based'
-                      ? `${UNIT_LABELS[locale][unit.unitType]} · ${tr('消耗积分', 'credits used')}`
-                      : `${UNIT_LABELS[locale][unit.unitType]} · ${tr('直接价格', 'direct price')}`}
-                    value={unit.value ?? 0}
-                    onChange={(value) => updateUnit(item, unit.unitType, value)}
-                  />
-                ))}
+                <UnitRulesEditor units={unitTypesForCategory(item.category)} value={item.unitDefinitions} onChange={unitDefinitions=>updateItem(item.id,{unitDefinitions})} zh={zh} prefix={`Unit price ${item.id}`} credits={item.pricingMode==='plan_credit_based'} />
+                {item.pricingMode==='direct_price_based'&&<><BillingTermsEditor value={item.billingTerms} onChange={billingTerms=>updateItem(item.id,{billingTerms})} zh={zh}/><label className="label">{tr('按积分计价的积分池','Pool for per-credit pricing')}<input className="input" value={item.creditPool??''} onChange={e=>updateItem(item.id,{creditPool:e.target.value})}/></label></>}
+
               </div>
 
               {item.pricingMode === 'plan_credit_based' && item.planPrice > 0 && item.creditAmount > 0 && (
                 <div className="receipt mt-4">
                   <div className="receipt-row">
                     <span className="k">{tr('每积分成本', 'Cost per credit')}</span>
-                    <span className="v">{formatCost(item.planPrice / item.creditAmount, item.currency)}</span>
+                    <span className="v">{results.find(result => result.id === item.id)?.creditUnitCostExact ?? '—'} {item.currency}</span>
                   </div>
                 </div>
               )}
             </section>
           ))}
 
+          {visibleItems.length === 0 && <p className="card p-5 text-sm text-ink-2">{tr('本场景还没有价格规则，可添加规则或切换至全部场景。', 'No rules in this category yet. Add a price rule or switch to all categories.')}</p>}
           <button className="btn-secondary w-full" type="button" onClick={addItem}>
             + {tr('添加价格规则', 'Add price rule')}
           </button>
@@ -313,94 +269,23 @@ function ManualCompare() {
               <label className="label">{tr('目标结果币种', 'Target currency')}</label>
               <select className="input" value={state.targetCurrency}
                 onChange={(event) => setState((current) => ({ ...current, targetCurrency: event.target.value }))}>
-                {MANUAL_CURRENCIES.map((currency) => <option value={currency} key={currency}>{currency}</option>)}
+                {Object.keys(state.rates).map((currency) => <option value={currency} key={currency}>{currency}</option>)}
               </select>
             </div>
-            <div className="mt-4 grid grid-cols-2 gap-3">
-              {MANUAL_CURRENCIES.map((currency) => (
-                <NumberField
-                  key={currency}
-                  label={`1 ${currency} = ? CNY`}
-                  value={state.rates[currency] ?? 0}
-                  onChange={(value) => setState((current) => ({
-                    ...current,
-                    rates: { ...current.rates, [currency]: value || current.rates[currency] || 1 },
-                  }))}
-                />
-              ))}
-            </div>
-            <p className="mt-3 text-xs text-ink-2">
-              {tr('汇率由你维护，避免把静态汇率误认为实时行情。', 'Rates are user-maintained and are not presented as live market data.')}
-            </p>
+            <div className="mt-4"><CalculatorFxEditor value={state} onChange={fx=>setState(current=>({...current,...fx}))} zh={zh}/></div>
           </section>
 
+          <section className="card p-5"><ComparisonMetricControl value={metric} onChange={setMetric} zh={zh} /><ComparisonBasisControl value={basis} onChange={setBasis} zh={zh} /></section>
           <section className="card p-5">
             <h2 className="font-display font-semibold text-ink">{tr('使用场景', 'Usage scenario')}</h2>
-            <div className="mt-4 grid grid-cols-2 gap-3">
-              <NumberField label={tr('输入 tokens', 'Input tokens')} value={state.scenario.textInputTokens}
-                onChange={(value) => updateScenario('textInputTokens', value)} />
-              <NumberField label={tr('输出 tokens', 'Output tokens')} value={state.scenario.textOutputTokens}
-                onChange={(value) => updateScenario('textOutputTokens', value)} />
-              <NumberField label={tr('图片张数', 'Images')} value={state.scenario.imageCount}
-                onChange={(value) => updateScenario('imageCount', value)} />
-              <NumberField label={tr('视频秒数', 'Video seconds')} value={state.scenario.videoSeconds}
-                onChange={(value) => updateScenario('videoSeconds', value)} />
-              <NumberField label={tr('音频分钟', 'Audio minutes')} value={state.scenario.audioMinutes}
-                onChange={(value) => updateScenario('audioMinutes', value)} />
-            </div>
+            <div className="mt-4"><CalculatorScenarioFields value={state.scenario} onChange={scenario=>setState(current=>({...current,scenario}))} zh={zh} category={category}/></div>
           </section>
         </aside>
       </div>
 
-      <section className="card overflow-hidden">
-        <div className="border-b border-line px-5 py-4">
-          <span className="eyebrow">{tr('对比结果', 'COMPARISON RESULTS')}</span>
-          <h2 className="mt-1 font-display text-xl font-semibold text-ink">
-            {tr('统一币种成本排名', 'Normalized cost ranking')}
-          </h2>
-        </div>
-        <div className="overflow-x-auto">
-          <table className="min-w-[900px] w-full text-left text-sm">
-            <thead className="bg-surface-2 text-xs uppercase tracking-label text-ink-2">
-              <tr>
-                <th className="px-4 py-3">#</th>
-                <th className="px-4 py-3">{tr('平台 / 模型', 'Platform / model')}</th>
-                <th className="px-4 py-3">{tr('类型', 'Type')}</th>
-                <th className="px-4 py-3">{tr('计费', 'Pricing')}</th>
-                <th className="px-4 py-3">{tr('每积分', 'Per credit')}</th>
-                <th className="px-4 py-3">{tr('原币种单位成本', 'Original unit cost')}</th>
-                <th className="px-4 py-3">{tr('目标币种单位成本', 'Normalized unit cost')}</th>
-                <th className="px-4 py-3">{tr('场景总成本', 'Scenario cost')}</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-line">
-              {results.map((result, index) => (
-                <tr className={index === 0 && result.scenarioCost !== null ? 'bg-success-soft/40' : 'bg-surface'} key={result.id}>
-                  <td className="px-4 py-4 font-semibold">{index + 1}</td>
-                  <td className="px-4 py-4">
-                    <div className="font-semibold text-ink">{result.platformName || '—'}</div>
-                    <div className="text-xs text-ink-2">{result.modelName || '—'}</div>
-                  </td>
-                  <td className="px-4 py-4">{CATEGORY_LABELS[locale][result.category]}</td>
-                  <td className="px-4 py-4">
-                    <div>{MODE_LABELS[locale][result.pricingMode]}</div>
-                    <div className="text-xs text-ink-2">{result.planName}</div>
-                  </td>
-                  <td className="px-4 py-4 tabular">{formatCost(result.creditUnitCost, result.sourceCurrency)}</td>
-                  <td className="px-4 py-4 tabular">{formatCost(result.originalUnitCost, result.sourceCurrency)}</td>
-                  <td className="px-4 py-4 tabular">{formatCost(result.convertedUnitCost, result.targetCurrency)}</td>
-                  <td className="px-4 py-4 font-semibold tabular text-primary">
-                    {formatCost(result.scenarioCost, result.targetCurrency)}
-                    {index === 0 && result.scenarioCost !== null && (
-                      <div className="mt-1 text-xs text-success">{tr('当前最低', 'Lowest')}</div>
-                    )}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </section>
+      {importPreview&&<CalculatorImportPreview preview={importPreview} currentCount={state.items.length} onConfirm={confirmImport} onCancel={()=>setImportPreview(null)} zh={zh}/>}
+      {transferPreview&&<CalculatorImportPreview preview={transferPreview} currentCount={0} onConfirm={confirmTransfer} onCancel={()=>setTransferPreview(null)} zh={zh} transfer/>}
+      <ManualComparisonResults rows={results} metric={metric} basis={basis} locale={locale} />
     </div>
   );
 }

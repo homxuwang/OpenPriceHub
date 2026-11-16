@@ -4,6 +4,8 @@ import path from 'path';
 
 export default defineConfig({
   plugins: [react()],
+  // Deployment builds read no local .env files; only explicitly supplied public settings.
+  envDir: process.env.OPH_BUILD_ENV_DIR || process.cwd(),
   resolve: {
     alias: {
       '@shared': path.resolve(__dirname, 'src/shared'),
@@ -12,10 +14,12 @@ export default defineConfig({
   },
   build: {
     outDir: 'dist',
-    sourcemap: true,
+    sourcemap: process.env.OPH_DEPLOY_BUILD !== '1',
   },
   server: {
-    port: 3000,
+    host: '0.0.0.0',
+    port: 3001,
+    proxy: { '/api': 'http://127.0.0.1:8787', '/sitemap.xml': 'http://127.0.0.1:8787', '/robots.txt': 'http://127.0.0.1:8787' },
     open: true,
   },
 });

@@ -1,0 +1,84 @@
+import assert from 'node:assert/strict';
+const { chromium } = await import(process.env.PLAYWRIGHT_MODULE || 'playwright');
+const base = process.env.TEST_URL || 'http://127.0.0.1:3001';
+const browser = await chromium.launch({ args: ['--no-sandbox'] });
+let checks = 0; const errors = [];
+try {
+  for (const locale of ['zh', 'en']) for (const width of [1440, 390]) {
+    const context = await browser.newContext({ viewport: { width, height: 900 } });
+    const page = await context.newPage(); page.on('pageerror', e => errors.push(e.message));
+    const zh = locale === 'zh';
+    await page.goto(`${base}/${locale}`);
+    const home = page.getByTestId('home-content');
+    await home.getByRole('heading', { level: 1 }).waitFor();
+    const categories = home.getByRole('region', { name: zh ? '从你的创作需求开始' : 'Start with what you want to create', exact: true });
+    assert.equal(await categories.getByRole('link').count(), 5);
+    assert.equal(await home.locator('[data-ad-slot]').count(), 2);
+    assert.match(await home.locator('[data-ad-slot=home-primary]').innerText(), zh ? /广告位.*预留/ : /ADVERTISEMENT.*RESERVED/);
+    const hrefs = await home.locator('a[href]').evaluateAll(links => links.map(a => a.getAttribute('href')));
+    assert.ok(hrefs.every(href => !/^\/(zh|en)\/(tools\/|guides|compare\?)/.test(href)), 'No placeholder detail/guide/comparison links');
+    assert.ok(hrefs.some(href => href === `/${locale}/calculator`));
+    assert.ok(hrefs.some(href => href === `/${locale}/discovery-lab`));
+    assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false); checks++;
+    const catalog = page.getByTestId('home-catalog');
+    assert.match(await catalog.getByRole('note').innerText(), zh ? /并非实时或已核验/ : /not live or verified/);
+    assert.equal(await catalog.getByText(zh ? '官方价格' : 'Official Price', { exact: true }).count(), 0);
+    assert.equal(await catalog.getByText(zh ? '已核验' : 'Verified', { exact: true }).count(), 0);
+    assert.equal(await catalog.locator('.card').count(), 4);
+    await catalog.getByRole('button', { name: zh ? 'AI 语音生成' : 'AI Voice & TTS', exact: true }).click();
+    assert.match(await catalog.innerText(), zh ? /暂无可展示的价格记录/ : /No price records/);
+    await catalog.getByRole('link', { name: zh ? /打开手动成本比较/ : /Open manual cost comparison/ }).click();
+    await page.waitForURL(`**/${locale}/compare/tts`);
+    await page.goto(`${base}/${locale}`);
+    await page.getByTestId('home-catalog').getByRole('button', { name: zh ? 'AI 音乐生成' : 'AI Music Generation', exact: true }).click();
+    assert.match(await page.getByTestId('home-catalog').innerText(), zh ? /暂无可展示的价格记录/ : /No price records/); checks++;
+    const search = page.getByRole('combobox', { name: zh ? '搜索' : 'Search', exact: true });
+    await search.fill('mdjrny');
+    await page.getByRole('option').filter({ hasText: 'Midjourney' }).click();
+    await page.waitForURL(`**/${locale}/tools?q=Midjourney`); checks++;
+    for (const [toolCategory, category] of [['image','image'], ['video','video'], ['voice','tts'], ['music','music'], ['llm-api','text']]) {
+      await page.goto(`${base}/${locale}`);
+      await page.getByTestId(`home-calc-${toolCategory}`).click();
+      await page.getByLabel('Calculator category', { exact: true }).waitFor();
+      assert.equal(await page.getByLabel('Calculator category', { exact: true }).inputValue(), category);
+      const groups = page.getByTestId('comparison-results').getByTestId('comparison-group');
+      await groups.first().waitFor();
+      assert.ok((await groups.evaluateAll(nodes => nodes.map(n => n.getAttribute('data-category')))).every(c => c === category));
+      await page.getByRole('button', { name: zh ? /简单快速比价/ : /^Quick comparison/ }).click();
+      const quickGroups = page.getByTestId('comparison-results').getByTestId('comparison-group');
+      assert.ok((await quickGroups.evaluateAll(nodes => nodes.map(n => n.getAttribute('data-category')))).every(c => c === category));
+      const before = await page.evaluate(() => JSON.parse(localStorage.getItem('oph.manual-compare.v1')).items.length);
+      await page.getByRole('button', { name: zh ? /添加价格规则/ : /Add price rule/ }).click();
+      const newItem = await page.evaluate(() => JSON.parse(localStorage.getItem('oph.manual-compare.v1')).items.at(-1));
+      assert.equal(newItem.category, category);
+      const after = await page.evaluate(() => JSON.parse(localStorage.getItem('oph.manual-compare.v1')).items.length);
+      assert.equal(after, before + 1);
+      assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false); checks++;
+    }
+    const allBefore = await page.evaluate(() => JSON.parse(localStorage.getItem('oph.detailed-compare.v1')));
+    await page.getByLabel('Calculator category', { exact: true }).selectOption('all');
+    const allAfter = await page.evaluate(() => JSON.parse(localStorage.getItem('oph.detailed-compare.v1')));
+    assert.deepEqual(allBefore, allAfter, 'Scope changes preserve records'); checks++;
+    // Saved identity suggestions take the user to their own model/provider, not placeholder pages.
+    await page.evaluate(() => { const saved = JSON.parse(localStorage.getItem('oph.detailed-compare.v1')); saved.models[0].name = 'My Home Model'; saved.platforms[0].name = 'My Provider'; localStorage.setItem('oph.detailed-compare.v1', JSON.stringify(saved)); });
+    await page.goto(`${base}/${locale}`);
+    await page.getByRole('combobox', { name: zh ? '搜索' : 'Search', exact: true }).fill('myhomemdl');
+    await page.getByRole('option').filter({ hasText: 'My Home Model' }).click();
+    await page.waitForURL('**/calculator?type=image&model=model-image');
+    const modelRows = page.getByTestId('comparison-results').locator('tbody tr');
+    await modelRows.first().waitFor();
+    assert.ok((await modelRows.allInnerTexts()).every(s => s.includes('My Home Model'))); checks++;
+    await page.goto(`${base}/${locale}`);
+    await page.getByRole('combobox', { name: zh ? '搜索' : 'Search', exact: true }).fill('My Provider');
+    await page.getByRole('option').filter({ hasText: 'My Provider' }).click();
+    await page.waitForURL('**/calculator?platform=platform-demo');
+    const providerRows = page.getByTestId('comparison-results').locator('tbody tr');
+    await providerRows.first().waitFor();
+    assert.ok((await providerRows.allInnerTexts()).every(s => s.includes('My Provider'))); checks++;
+    await page.goto(`${base}/${locale}`);
+    await page.screenshot({ path: `/tmp/oph-home-${locale}-${width}.png`, fullPage: true });
+    await context.close();
+  }
+  assert.deepEqual(errors, []);
+  console.log(JSON.stringify({ checks, pageErrors: errors, locales: ['zh','en'], widths: [1440,390] }));
+} finally { await browser.close(); }

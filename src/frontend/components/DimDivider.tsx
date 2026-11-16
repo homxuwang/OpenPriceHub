@@ -1,7 +1,6 @@
 // OpenPriceHub · DimDivider — 尺寸线分隔符
 // 形如机械制图的尺寸标注线: 端点竖记号 + 横线 + 居中标签。
 
-import React from 'react';
 
 interface DimDividerProps {
   label?: string;

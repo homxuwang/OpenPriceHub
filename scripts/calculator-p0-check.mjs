@@ -1,0 +1,72 @@
+import assert from 'node:assert/strict';
+import { readFile } from 'node:fs/promises';
+const { chromium } = await import(process.env.PLAYWRIGHT_MODULE || 'playwright');
+const base = process.env.TEST_URL || 'http://127.0.0.1:3001';
+const browser = await chromium.launch({ args: ['--no-sandbox'] });
+const errors = []; let checks = 0;
+try {
+  for (const locale of ['zh', 'en']) for (const width of [1440, 390]) {
+    const context = await browser.newContext({ viewport: { width, height: 900 }, acceptDownloads: true });
+    const page = await context.newPage(); page.on('pageerror', e => errors.push(e.message));
+    const zh = locale === 'zh';
+    const load = zh ? '载入示例' : 'Load sample', exp = zh ? '导出 JSON' : 'Export JSON';
+    await page.goto(`${base}/${locale}/calculator`);
+    await page.getByRole('button', { name: load, exact: true }).click();
+    const results = page.getByTestId('comparison-results');
+    const groups = results.getByTestId('comparison-group');
+    assert.equal(await groups.count(), 5);
+    for (const category of ['image', 'video', 'tts', 'music', 'text']) {
+      assert.equal(await results.locator(`[data-category="${category}"]`).count(), 1); checks++;
+    }
+    assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false);
+    assert.match(await page.getByRole('note').innerText(), zh ? /模拟数据/ : /simulated/);
+    const detailed = await page.evaluate(() => JSON.parse(localStorage.getItem('oph.detailed-compare.v1')));
+    const downloadPromise = page.waitForEvent('download');
+    await page.getByRole('button', { name: exp, exact: true }).click();
+    const download = await downloadPromise;
+    const exportedFile = JSON.parse(await readFile(await download.path(), 'utf8'));
+    assert.equal(exportedFile.version,2); const exported=exportedFile.data;
+    assert.deepEqual(exported, detailed); checks++;
+    const fixture = structuredClone(detailed);
+    fixture.platforms.push({ id: 'second-provider', name: 'SIM Video Provider 2', defaultCurrency: 'USD', notes: 'Mock acceptance only' });
+    fixture.rules.push({ ...fixture.rules.find(x => x.id === 'rule-video'), id: 'video-minute', platformId: 'second-provider', unitDefinitions: [{ unitType: 'per_minute', value: 6 }] });
+    await page.locator('input[type=file]').setInputFiles({ name: 'p0.json', mimeType: 'application/json', buffer: Buffer.from(JSON.stringify(fixture)) });
+    await page.getByRole('dialog',{name:'Import preview'}).getByRole('button',{name:zh?'确认导入并替换':'Confirm import and replace',exact:true}).click();
+    await results.getByTestId('comparison-row-video-minute:direct').waitFor();
+    assert.equal(await results.locator('[data-category="video"]').count(), 2);
+    await page.getByLabel('Comparison basis', { exact: true }).selectOption('same_usage');
+    assert.equal(await results.locator('[data-category="video"]').count(), 1);
+    assert.equal(await results.locator('[data-category="video"] tbody tr').count(), 2);
+    const metric = page.getByText(zh ? '对比指标' : 'Comparison metric', { exact: true }).locator('..').locator('select');
+    await metric.selectOption('unit');
+    assert.equal(await results.locator('[data-category="video"]').count(), 2);
+    assert.match(await results.locator('[data-category="text"]').innerText(), zh ? /没有统一单位成本/ : /no combined unit cost/); checks++;
+    await page.getByRole('button', { name: zh ? /简单快速比价/ : /^Quick comparison/ }).click();
+    await page.getByRole('button', { name: load, exact: true }).click();
+    assert.equal(await groups.count(), 1); checks++;
+    const quick = await page.evaluate(() => JSON.parse(localStorage.getItem('oph.manual-compare.v1')));
+    const legacy = structuredClone(quick);
+    delete legacy.items[0].parameters;
+    legacy.items[1].category = 'audio';
+    legacy.items[1].unitDefinitions = [{ unitType: 'per_minute', value: 1 }];
+    await page.locator('input[type=file]').setInputFiles({ name: 'legacy.json', mimeType: 'application/json', buffer: Buffer.from(JSON.stringify(legacy)) });
+    await page.getByRole('dialog',{name:'Import preview'}).getByRole('button',{name:zh?'确认导入并替换':'Confirm import and replace',exact:true}).click();
+    await results.getByText(zh ? /参数未确认：/ : /Parameters unconfirmed:/).waitFor();
+    assert.match(await results.innerText(), zh ? /旧音频类型未区分/ : /Legacy audio is unclassified/);
+    assert.equal(await results.getByText(zh ? '组内最低' : 'Lowest in group', { exact: true }).count(), 0);
+    const quickDownloadPromise = page.waitForEvent('download');
+    await page.getByRole('button', { name: exp, exact: true }).click();
+    const quickDownload = await quickDownloadPromise;
+    const restoredFile = JSON.parse(await readFile(await quickDownload.path(), 'utf8'));
+    assert.equal(restoredFile.version,2);const restored=restoredFile.data;
+    assert.deepEqual(restored.items, legacy.items); checks++;
+    await page.getByLabel(`Unit price ${legacy.items[0].id} per_image`, { exact: true }).fill('');
+    assert.match(await results.getByTestId(`comparison-row-${legacy.items[0].id}`).innerText(), /—/);
+    assert.match(await results.innerText(), zh ? /必要价格缺失/ : /Required price missing/);
+    checks++;
+    assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false);
+    await context.close();
+  }
+  assert.deepEqual(errors, []);
+  console.log(JSON.stringify({ checks, pageErrors: errors, locales: ['zh', 'en'], widths: [1440, 390] }));
+} finally { await browser.close(); }

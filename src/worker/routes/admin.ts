@@ -6,7 +6,7 @@ import type { Env } from '../../shared/types';
 // 验证管理员密钥
 function verifyAdminKey(request: Request, env: Env): boolean {
   const adminKey = request.headers.get('X-Admin-Key');
-  return adminKey === env.ADMIN_KEY;
+  return !!env.ADMIN_KEY && !/^(your-|dev-admin-key)/.test(env.ADMIN_KEY) && adminKey === env.ADMIN_KEY;
 }
 
 // 获取待审核提交
@@ -22,8 +22,8 @@ export async function getSubmissions(db: D1Database, status?: string) {
   query += ' ORDER BY created_at DESC';
 
   const submissions = params.length > 0
-    ? await db.prepare(query).bind(...params).all()
-    : await db.prepare(query).all();
+    ? await db.prepare(query).bind(...params).all<any>().then(result => result.results)
+    : await db.prepare(query).all<any>().then(result => result.results);
 
   return submissions.map((s) => ({
     id: s.id,
@@ -52,7 +52,7 @@ export async function reviewSubmission(
   status: 'approved' | 'rejected',
   adminNotes?: string
 ) {
-  const existing = await db.prepare('SELECT * FROM submissions WHERE id = ?').bind(id).first();
+  const existing = await db.prepare('SELECT * FROM submissions WHERE id = ?').bind(id).first<any>();
 
   if (!existing) {
     return null;
@@ -81,7 +81,7 @@ async function createDataFromSubmission(db: D1Database, submission: any) {
   let platform = await db
     .prepare('SELECT id FROM platforms WHERE name = ?')
     .bind(submission.platform_name)
-    .first();
+    .first<any>();
 
   if (!platform) {
     const platformId = `platform-${crypto.randomUUID()}`;
@@ -99,7 +99,7 @@ async function createDataFromSubmission(db: D1Database, submission: any) {
   let model = await db
     .prepare('SELECT id FROM models WHERE name = ?')
     .bind(submission.model_name)
-    .first();
+    .first<any>();
 
   if (!model) {
     const modelId = `model-${crypto.randomUUID()}`;
@@ -119,7 +119,7 @@ async function createDataFromSubmission(db: D1Database, submission: any) {
     const plan = await db
       .prepare('SELECT id FROM plans WHERE platform_id = ? AND name = ?')
       .bind(platform.id, submission.plan_name)
-      .first();
+      .first<any>();
 
     if (!plan) {
       planId = `plan-${crypto.randomUUID()}`;
@@ -162,7 +162,7 @@ async function createDataFromSubmission(db: D1Database, submission: any) {
 
 // 删除提交
 export async function deleteSubmission(db: D1Database, id: string) {
-  const existing = await db.prepare('SELECT * FROM submissions WHERE id = ?').bind(id).first();
+  const existing = await db.prepare('SELECT * FROM submissions WHERE id = ?').bind(id).first<any>();
 
   if (!existing) {
     return false;
@@ -175,12 +175,12 @@ export async function deleteSubmission(db: D1Database, id: string) {
 
 // 获取统计数据
 export async function getStats(db: D1Database) {
-  const platformsCount = await db.prepare('SELECT COUNT(*) as count FROM platforms').first();
-  const modelsCount = await db.prepare('SELECT COUNT(*) as count FROM models').first();
-  const rulesCount = await db.prepare('SELECT COUNT(*) as count FROM rules').first();
+  const platformsCount = await db.prepare('SELECT COUNT(*) as count FROM platforms').first<any>();
+  const modelsCount = await db.prepare('SELECT COUNT(*) as count FROM models').first<any>();
+  const rulesCount = await db.prepare('SELECT COUNT(*) as count FROM rules').first<any>();
   const pendingCount = await db
     .prepare("SELECT COUNT(*) as count FROM submissions WHERE status = 'pending'")
-    .first();
+    .first<any>();
 
   return {
     platforms: platformsCount?.count || 0,

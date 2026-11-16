@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 1,
+  "target": "production",
+  "accountId": "FILL_32_HEX_ACCOUNT_ID",
+  "workerName": "openpricehub",
+  "siteUrl": "https://YOUR_WORKER.YOUR_SUBDOMAIN.workers.dev",
+  "database": {
+    "name": "ai-price-compare",
+    "id": "FILL_D1_DATABASE_UUID"
+  },
+  "kvNamespaceId": null,
+  "workersDev": true,
+  "customDomain": null,
+  "includeSeedData": false
+}

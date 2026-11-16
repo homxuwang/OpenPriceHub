@@ -13,15 +13,22 @@ interface LayoutProps {
 
 const navItems: { path: string; key: string }[] = [
   { path: '/', key: 'nav.home' },
-  { path: '/calculator', key: 'nav.calculator' },
   { path: '/guides', key: 'nav.guides' },
 ];
 
 const toolNavItems: { path: string; key: string }[] = [
   { path: '/tools', key: 'categories.all' },
+  { path: '/websites', key: 'nav.channelPrices' },
   { path: '/tools?category=image', key: 'nav.image' },
   { path: '/tools?category=video', key: 'nav.video' },
+  { path: '/compare/tts', key: 'nav.voiceTools' },
+  { path: '/compare/music', key: 'nav.musicTools' },
   { path: '/tools?category=llm-api', key: 'nav.llmApi' },
+];
+
+const costNavItems = [
+  { path: '/calculator', key: 'nav.calculator' },
+  { path: '/discovery-lab', key: 'nav.discoveryLab' },
 ];
 
 function Mark() {
@@ -40,16 +47,16 @@ function Layout({ children }: LayoutProps) {
   const lp = useLocalePath();
   const location = useLocation();
   const [open, setOpen] = useState(false);
-  const [toolsOpen, setToolsOpen] = useState(false);
-  const toolsMenuRef = useRef<HTMLDivElement>(null);
+  const [activeMenu, setActiveMenu] = useState<'tools' | 'cost' | null>(null);
+  const menusRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
-    setToolsOpen(false);
+    setActiveMenu(null); setOpen(false);
   }, [location.pathname, location.search]);
 
   useEffect(() => {
     const closeMenu = (event: MouseEvent) => {
-      if (!toolsMenuRef.current?.contains(event.target as Node)) setToolsOpen(false);
+      if (!menusRef.current?.contains(event.target as Node)) setActiveMenu(null);
     };
     document.addEventListener('mousedown', closeMenu);
     return () => document.removeEventListener('mousedown', closeMenu);
@@ -77,7 +84,7 @@ function Layout({ children }: LayoutProps) {
           </Link>
 
           {/* 桌面导航 */}
-          <nav className="ml-2 hidden flex-1 items-center gap-1 lg:flex">
+          <nav ref={menusRef} className="ml-2 hidden flex-1 items-center gap-1 lg:flex" onKeyDown={e => { if (e.key === 'Escape') { setActiveMenu(null); const group = (e.target as HTMLElement).closest('.relative'); (group?.querySelector('button') as HTMLButtonElement | null)?.focus(); } }} onBlur={e => { if (!e.currentTarget.contains(e.relatedTarget as Node | null)) setActiveMenu(null); }}>
             {navItems.slice(0, 1).map((it) => (
               <Link
                 key={it.key}
@@ -89,38 +96,25 @@ function Layout({ children }: LayoutProps) {
                 {t(it.key)}
               </Link>
             ))}
-            <div className="relative" ref={toolsMenuRef}>
-              <button
-                type="button"
-                onClick={() => setToolsOpen((value) => !value)}
-                aria-expanded={toolsOpen}
-                aria-haspopup="menu"
-                className={`inline-flex items-center gap-1 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
-                  current === '/tools' ? 'bg-primary-50 text-primary-700' : 'text-ink-2 hover:bg-surface-2 hover:text-ink'
-                }`}
-              >
-                {t('nav.tools')}
-                <svg className={`h-3.5 w-3.5 transition-transform ${toolsOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="m6 9 6 6 6-6" />
-                </svg>
-              </button>
-              {toolsOpen && (
-                <div className="absolute left-0 top-full z-50 mt-2 w-44 rounded-xl border border-line bg-surface p-1.5 shadow-pop" role="menu">
-                  {toolNavItems.map((it) => (
-                    <Link
-                      key={it.key}
-                      to={lp(it.path)}
-                      role="menuitem"
-                      className={`block rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
-                        isActive(it.path) ? 'bg-primary-50 text-primary-700' : 'text-ink-2 hover:bg-surface-2 hover:text-ink'
-                      }`}
-                    >
-                      {t(it.key)}
-                    </Link>
-                  ))}
-                </div>
-              )}
-            </div>
+            {([
+              { id: 'tools' as const, label: 'nav.tools', items: toolNavItems },
+              { id: 'cost' as const, label: 'nav.costTools', items: costNavItems },
+            ]).map(group => (
+              <div className="relative" key={group.id}>
+                <button type="button" onClick={() => setActiveMenu(activeMenu === group.id ? null : group.id)}
+                  aria-expanded={activeMenu === group.id} aria-controls={`nav-${group.id}`} aria-haspopup="menu"
+                  className={`inline-flex items-center gap-1 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${group.items.some(it => isActive(it.path)) ? 'bg-primary-50 text-primary-700' : 'text-ink-2 hover:bg-surface-2 hover:text-ink'}`}>
+                  {t(group.label)}
+                  <svg className={`h-3.5 w-3.5 transition-transform ${activeMenu === group.id ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="m6 9 6 6 6-6" />
+                  </svg>
+                </button>
+                {activeMenu === group.id && <div id={`nav-${group.id}`} role="menu" aria-label={t(group.label)} className="absolute left-0 top-full z-50 mt-2 w-56 rounded-xl border border-line bg-surface p-1.5 shadow-pop">
+                  {group.items.map(it => <Link key={it.key} to={lp(it.path)} role="menuitem" onClick={() => setActiveMenu(null)}
+                    className={`block rounded-lg px-3 py-2 text-sm font-medium transition-colors ${isActive(it.path) ? 'bg-primary-50 text-primary-700' : 'text-ink-2 hover:bg-surface-2 hover:text-ink'}`}>{t(it.key)}</Link>)}
+                </div>}
+              </div>
+            ))}
             {navItems.slice(1).map((it) => (
               <Link
                 key={it.key}
@@ -162,18 +156,15 @@ function Layout({ children }: LayoutProps) {
         {open && (
           <div className="border-t border-line lg:hidden">
             <nav className="mx-auto max-w-7xl px-4 py-2 sm:px-6">
-              {[navItems[0], { path: '/tools', key: 'nav.tools' }, ...toolNavItems.slice(1), ...navItems.slice(1), { path: '/submit', key: 'nav.submit' }].map((it) => (
-                <Link
-                  key={it.key}
-                  to={lp(it.path)}
-                  onClick={() => setOpen(false)}
-                  className={`block rounded-lg px-3 py-2.5 text-sm font-medium ${
-                    isActive(it.path) ? 'bg-primary-50 text-primary-700' : 'text-ink-2'
-                  }`}
-                >
-                  {t(it.key)}
-                </Link>
-              ))}
+              <Link to={lp('/')} onClick={() => setOpen(false)} className="block rounded-lg px-3 py-2.5 text-sm font-medium">{t('nav.home')}</Link>
+              {[
+                { label: 'nav.tools', items: toolNavItems },
+                { label: 'nav.costTools', items: costNavItems },
+              ].map(group => <details key={group.label} className="rounded-lg">
+                <summary className="cursor-pointer px-3 py-2.5 text-sm font-medium text-ink-2">{t(group.label)}</summary>
+                <div className="ml-3 border-l border-line pl-2">{group.items.map(it => <Link key={it.key} to={lp(it.path)} onClick={() => setOpen(false)} className={`block rounded-lg px-3 py-2.5 text-sm font-medium ${isActive(it.path) ? 'bg-primary-50 text-primary-700' : 'text-ink-2'}`}>{t(it.key)}</Link>)}</div>
+              </details>)}
+              {[...navItems.slice(1), { path: '/submit', key: 'nav.submit' }].map(it => <Link key={it.key} to={lp(it.path)} onClick={() => setOpen(false)} className={`block rounded-lg px-3 py-2.5 text-sm font-medium ${isActive(it.path) ? 'bg-primary-50 text-primary-700' : 'text-ink-2'}`}>{t(it.key)}</Link>)}
               <div className="flex items-center gap-2 px-1 py-3">
                 <CurrencySwitcher />
                 <LanguageSwitcher />
@@ -204,6 +195,8 @@ function Layout({ children }: LayoutProps) {
               <li><Link to={lp('/tools')} className="text-ink-2 hover:text-primary">{t('nav.tools')}</Link></li>
               <li><Link to={lp('/tools?category=image')} className="text-ink-2 hover:text-primary">{t('nav.image')}</Link></li>
               <li><Link to={lp('/tools?category=video')} className="text-ink-2 hover:text-primary">{t('nav.video')}</Link></li>
+              <li><Link to={lp('/compare/tts')} className="text-ink-2 hover:text-primary">{t('nav.voiceTools')}</Link></li>
+              <li><Link to={lp('/compare/music')} className="text-ink-2 hover:text-primary">{t('nav.musicTools')}</Link></li>
               <li><Link to={lp('/tools?category=llm-api')} className="text-ink-2 hover:text-primary">{t('nav.llmApi')}</Link></li>
             </ul>
           </div>

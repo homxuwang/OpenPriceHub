@@ -14,7 +14,7 @@ import { SearchBar } from '../components/SearchBar';
 import { SponsoredCard } from '../components/SponsoredCard';
 import { EmptyState } from '../components/EmptyState';
 
-const CATS: (ToolCategory | 'all')[] = ['all', 'image', 'video', 'llm-api'];
+const CATS: (ToolCategory | 'all')[] = ['all', 'image', 'video', 'llm-api', 'voice', 'music'];
 
 const FILTER_CONFIG: { group: string; field: keyof ToolFilters; options: string[]; tkey: string }[] = [
   { group: 'audience', field: 'audiences', options: ['ecommerce', 'designer', 'creator', 'developer', 'team', 'individual'], tkey: 'audiences' },
@@ -156,7 +156,6 @@ function ToolTable({ tools }: { tools: Tool[] }) {
 
 function Tools() {
   const t = useT();
-  const lp = useLocalePath();
   const { currency } = useCurrency();
   const [params, setParams] = useSearchParams();
   const allTools = useTools().data;

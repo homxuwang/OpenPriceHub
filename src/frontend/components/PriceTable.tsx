@@ -1,6 +1,5 @@
 // OpenPriceHub · 价格表格 — 规格图纸样式,最低价旗标置顶
 
-import React from 'react';
 import { Link } from 'react-router-dom';
 import { CATEGORY_LABELS } from '../../shared/constants';
 

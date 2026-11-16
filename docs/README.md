@@ -1,4 +1,32 @@
-# AI Price Compare Web - 文档中心
+# OpenPriceHub 文档中心
+
+当前阶段：
+
+- [Mock First 阶段存档与下一阶段建议 v1.0.0](./mock-milestone-v1.0.0.md)
+
+- [Cloudflare 私有配置、迁移与部署 v1.0.0](./cloudflare-private-deployment-v1.0.0.md)
+
+- [官方/第三方报价与开发者提交 v1.0.0](./channel-prices-developer-submissions-v1.0.0.md)
+
+- [产品详情、比较与平替动态更新方案 v1.0.0（草案）](./catalog-dynamic-update-plan-v1.0.0.md)
+
+- [模型成本计算器 P0—P4 统一验收报告 v1.0.0](./calculator-complete-acceptance-v1.0.0.md)
+
+- [模型成本计算器 P1 整包购买与广告预留验收报告 v1.0.0](./calculator-p1-acceptance-v1.0.0.md)
+
+- [首页增量优化与测试报告 v1.0.0](./home-optimization-v1.0.0.md)
+
+- [模型成本计算器 P0 计价维度隔离验收报告 v1.0.0](./calculator-p0-acceptance-v1.0.0.md)
+
+- [P1 Mock First 交付与测试报告 v1.0.0](./p1-mock-first-v1.0.0.md)
+- [P1 D1 增量适配方案 v1.1.0](./p1-d1-adaptation-v1.1.0.md)
+
+历史整改文档：
+
+- [项目审计、整改清单与结构图](./product-remediation.md)
+- [运行、核验来源、数据库迁移与验收](./catalog-operations.md)
+
+下方部分文档保留原有平台/模型接口资料；当前结构以 migrations 和上述运营说明为准。
 
 ## 文档目录
 

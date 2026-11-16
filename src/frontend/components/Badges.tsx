@@ -1,6 +1,5 @@
 // OpenPriceHub · 可信度徽章 (文档 §15.2) — 全站统一信号色词汇
 
-import React from 'react';
 import type { PriceConfidence, CommercialUse } from '../../shared/types';
 import { useT } from '../i18n';
 

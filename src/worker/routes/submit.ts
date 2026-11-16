@@ -2,7 +2,7 @@
 
 import { successResponse, errorResponse } from '../utils/response';
 import { validateSubmission } from '../utils/validation';
-import type { Env, UnitDefinition } from '../../shared/types';
+import type { Env } from '../../shared/types';
 
 // 提交新价格
 export async function submitPrice(db: D1Database, data: any, ip?: string) {
@@ -51,7 +51,7 @@ export async function checkDuplicate(db: D1Database, data: any) {
        AND status IN ('pending', 'approved')`
     )
     .bind(data.platformName, data.modelName, data.planName || null)
-    .first();
+    .first<any>();
 
   return !!existing;
 }

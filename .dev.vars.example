@@ -1,0 +1,4 @@
+# Local Worker only. Copy to .dev.vars (ignored by Git).
+# Use a different value from the production ADMIN_KEY.
+ADMIN_KEY="replace-with-a-unique-local-development-key"
+SITE_URL="http://localhost:3001"

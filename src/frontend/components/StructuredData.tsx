@@ -1,6 +1,5 @@
 // AI Price Compare Web - 结构化数据组件
 
-import React from 'react';
 
 interface StructuredDataProps {
   type: 'WebApplication' | 'Product' | 'Organization' | 'BreadcrumbList';

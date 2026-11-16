@@ -1,5 +1,7 @@
 # AI Price Compare Web - 数据库设计文档
 
+> 新版目录、兼容迁移和启动方式请先查看 [运营说明](./catalog-operations.md)。本文保留原有平台/模型接口资料；当前数据库结构以 migrations 为准。
+
 ## 概述
 
 使用 Cloudflare D1 (SQLite 兼容) 作为主数据库。
@@ -278,7 +280,7 @@ CREATE INDEX idx_submissions_created_at ON submissions(created_at);
 ### 查询所有平台及其模型数量
 
 ```sql
-SELECT 
+SELECT
   p.*,
   COUNT(DISTINCT r.model_id) as model_count
 FROM platforms p
@@ -289,7 +291,7 @@ GROUP BY p.id;
 ### 查询模型在各平台的价格
 
 ```sql
-SELECT 
+SELECT
   m.name as model_name,
   p.name as platform_name,
   r.input_price,
@@ -312,7 +314,7 @@ WHERE status = 'pending';
 ### 查询价格排名
 
 ```sql
-SELECT 
+SELECT
   m.name as model_name,
   p.name as platform_name,
   (r.input_price + r.output_price) / 2 as avg_price,

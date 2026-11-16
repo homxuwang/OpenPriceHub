@@ -22,8 +22,8 @@ export async function getModels(db: D1Database, category?: string) {
   query += ' ORDER BY m.name';
 
   const models = params.length > 0
-    ? await db.prepare(query).bind(...params).all()
-    : await db.prepare(query).all();
+    ? await db.prepare(query).bind(...params).all<any>().then(result => result.results)
+    : await db.prepare(query).all<any>().then(result => result.results);
 
   return models.map((m) => ({
     id: m.id,
@@ -38,7 +38,7 @@ export async function getModels(db: D1Database, category?: string) {
 
 // 获取模型详情
 export async function getModelById(db: D1Database, id: string) {
-  const model = await db.prepare('SELECT * FROM models WHERE id = ?').bind(id).first();
+  const model = await db.prepare('SELECT * FROM models WHERE id = ?').bind(id).first<any>();
 
   if (!model) {
     return null;
@@ -54,7 +54,7 @@ export async function getModelById(db: D1Database, id: string) {
        ORDER BY p.name`
     )
     .bind(id)
-    .all();
+    .all<any>().then(result => result.results);
 
   return {
     id: model.id,
@@ -101,7 +101,7 @@ export async function createModel(db: D1Database, data: any) {
 
 // 更新模型
 export async function updateModel(db: D1Database, id: string, data: any) {
-  const existing = await db.prepare('SELECT * FROM models WHERE id = ?').bind(id).first();
+  const existing = await db.prepare('SELECT * FROM models WHERE id = ?').bind(id).first<any>();
 
   if (!existing) {
     return null;
@@ -121,7 +121,7 @@ export async function updateModel(db: D1Database, id: string, data: any) {
 
 // 删除模型
 export async function deleteModel(db: D1Database, id: string) {
-  const existing = await db.prepare('SELECT * FROM models WHERE id = ?').bind(id).first();
+  const existing = await db.prepare('SELECT * FROM models WHERE id = ?').bind(id).first<any>();
 
   if (!existing) {
     return false;

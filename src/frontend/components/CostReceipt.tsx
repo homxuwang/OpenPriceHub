@@ -1,6 +1,5 @@
 // OpenPriceHub · 成本收据 (签名元素) — 把价格拆解为预计单位成本
 
-import React from 'react';
 import type { UnitCostEstimate } from '../../shared/types';
 import { useT } from '../i18n';
 import { useCurrency } from '../context/CurrencyProvider';

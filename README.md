@@ -1,164 +1,67 @@
-# AI Price Compare Web
+> Cloudflare 迁移/部署：`npm run cf:init` 创建私有配置文件，本地填写后运行 `cf:check`、`cf:plan`。实际执行使用 `npm run cf:deploy -- --apply`，密钥不写入仓库或构建。详见[部署说明 v1.0.0](docs/cloudflare-private-deployment-v1.0.0.md)。
 
-免费、开源的 AI 模型价格对比平台。
+> 新增：官方/第三方/独立开发者渠道报价、网站提交与管理员价格审核。入口 `/zh/submit/website`、`/zh/admin`、`/zh/websites`。本地 D1 已增量初始化，远程未迁移。详见[数据库与功能交付 v1.0.0](docs/channel-prices-developer-submissions-v1.0.0.md)。
 
-## 功能特性
+> P1 Mock First：新增独立验证入口 `/zh/discovery-lab` 和 `/en/discovery-lab`，全部数据明确标记为模拟数据。保留原 UI，未执行 D1 迁移。详见[交付与测试报告](docs/p1-mock-first-v1.0.0.md)。
 
-- 🔍 **价格查询**: 浏览不同平台上 AI 模型的定价信息
-- 📊 **跨平台对比**: 选择多个模型，查看各平台的价格差异
-- 💰 **积分换算**: 自动将积分套餐换算成单位价格
-- 👥 **众包数据**: 用户可以提交新价格，经审核后展示
-- 🔍 **SEO 优化**: 搜索引擎友好的 SSR 渲染
-- 📱 **响应式设计**: 支持移动端访问
-- 🛡️ **管理后台**: 管理员审核用户提交
+> 当前状态：保留原有架构与 UI，模型成本计算器 P0—P4 增量开发及本地测试完成，等待统一验收。详见[计算器统一验收报告 v1.0.0](docs/calculator-complete-acceptance-v1.0.0.md)。本次未修改生产 D1、执行迁移或部署。
 
-## 技术栈
+> 下方功能清单包含此前保留的扩展模块；当前实际接入与测试范围以对应阶段报告和 `src/frontend/App.tsx` 的路由为准。
 
-| 层级 | 技术 | 说明 |
-|------|------|------|
-| 前端 | React 18 + Vite | 现代化前端框架 |
-| UI | Tailwind CSS | 实用优先的 CSS 框架 |
-| 后端 | Cloudflare Workers | 边缘计算 |
-| 数据库 | Cloudflare D1 | SQLite 兼容数据库 |
-| 缓存 | Cloudflare KV | 键值存储 |
-| 部署 | Cloudflare Pages | 全球 CDN |
+# OpenPriceHub
 
-## 快速开始
+**AI Tools Price Comparison & Affordable Alternatives Platform**
 
-### 一键部署 (推荐)
+**Find Better AI Tools. Spend Less.**
 
-```bash
-# Linux/macOS
-bash scripts/setup.sh
+帮助 AI 创作者、独立开发者和内容生产者发现工具价格、寻找低价替代方案、比较套餐并计算实际创作成本。
 
-# Windows
-scripts\setup.bat
-```
+## 功能
 
-### 手动部署
+- 图片、视频、语音与 TTS、音乐四类目录；模糊搜索和套餐级多计费方式筛选。
+- 产品详情、官方来源与核验日期、定向平替关系、多产品比较及四类成本计算器。
+- 保留快速/详细手动比较、本地保存和 JSON 导入导出。
+- D1 数据目录、价格历史、用户提交审核、校验发布、同步日志和有披露的推广链接。
+- 中英文路由、桌面表格与移动卡片、预渲染、Metadata、Canonical、结构化数据和 Sitemap。
+
+不同计价单位不混排；未知价格、功能、热度与质量不会补造。初始目录包含 9 个已核验条目及 1 个待核验条目，来源详见[运营说明](docs/catalog-operations.md)。
+
+## 本地运行
+
+继续使用 React 18、Vite、Tailwind、Cloudflare Worker 和 D1。
 
 ```bash
-# 1. 克隆项目
-git clone https://github.com/your-username/ai-price-compare-web.git
-cd ai-price-compare-web
+npm ci
+npm run build
+npm run db:migrate
 
-# 2. 安装依赖
-npm install
+# 终端一：本地 API 和 D1
+npm run worker:dev -- --ip 127.0.0.1 --port 8787 --local
 
-# 3. 登录 Cloudflare
-npx wrangler login
-
-# 4. 创建 D1 数据库
-npx wrangler d1 create ai-price-compare
-
-# 5. 更新 wrangler.toml 中的 database_id
-
-# 6. 初始化数据库
-npm run db:init
-
-# 7. 导入示例数据
-npm run db:seed
-
-# 8. 启动开发服务器
-npm run dev          # 前端
-npm run worker:dev   # 后端
+# 终端二：前端，监听 0.0.0.0:3001
+npm run dev
 ```
 
-## 文档
+访问 `http://localhost:3001/`，中文入口 `/zh`。后台 `/admin` 使用 `.dev.vars` 中设置的 `ADMIN_KEY`，不能使用仓库内的示例密钥。前端代理本机 8787。
 
-- [快速开始](./docs/quick-start.md) - 30 秒快速体验
-- [配置文档](./docs/configuration.md) - 详细的环境配置
-- [部署指南](./docs/deployment.md) - 完整的部署流程
-- [API 文档](./docs/api.md) - RESTful API 接口
-- [数据库设计](./docs/database.md) - D1 数据库表结构
-- [开发指南](./docs/development.md) - 本地开发环境
+本地迁移兼容旧版本手动建表方式并保留已有业务行。生产部署通过私有 JSON 配置执行：先 `npm run cf:check` 和 `npm run cf:plan`，确认目标后运行 `npm run cf:deploy -- --apply`。此流程自动备份 D1，默认排除演示种子数据。
 
-## 项目结构
-
-```
-ai-price-compare-web/
-├── src/
-│   ├── worker/          # Cloudflare Workers 后端
-│   │   ├── index.ts     # Worker 入口
-│   │   ├── routes/      # API 路由
-│   │   └── utils/       # 工具函数
-│   ├── frontend/        # React 前端
-│   │   ├── pages/       # 页面组件
-│   │   ├── components/  # 公共组件
-│   │   └── hooks/       # 自定义 Hooks
-│   └── shared/          # 前后端共享代码
-├── migrations/          # 数据库迁移
-├── tests/               # 测试文件
-├── scripts/             # 部署脚本
-├── docs/                # 文档
-└── public/              # 静态资源
-```
-
-## API 接口
-
-### 公开 API
-
-- `GET /api/platforms` - 获取所有平台
-- `GET /api/platforms/:id` - 获取平台详情
-- `GET /api/models` - 获取所有模型
-- `GET /api/models/:id` - 获取模型详情
-- `GET /api/prices` - 价格查询
-- `GET /api/prices/compare` - 价格对比
-- `POST /api/submit` - 提交新价格
-
-### 管理 API
-
-需要 `X-Admin-Key` header 认证:
-
-- `GET /api/admin/submissions` - 获取提交列表
-- `PUT /api/admin/submissions/:id` - 审核提交
-- `DELETE /api/admin/submissions/:id` - 删除提交
-- `GET /api/admin/stats` - 获取统计数据
-
-## 开发命令
+## 验证
 
 ```bash
-# 开发
-npm run dev              # 启动前端开发服务器
-npm run worker:dev       # 启动后端 API
-
-# 构建
-npm run build            # 构建生产版本
-npm run preview          # 预览生产版本
-
-# 测试
-npm test                 # 运行测试
-npm run test:watch       # 监听模式测试
-
-# 部署
-npm run worker:deploy    # 部署到 Cloudflare
-
-# 数据库
-npm run db:init          # 初始化数据库
-npm run db:seed          # 导入示例数据
+npm run typecheck
+npm test
+npm run build
 ```
 
-## SEO 特性
+API 与浏览器验收命令见[运营说明](docs/catalog-operations.md)。
 
-- 服务器端渲染 (SSR) - 搜索引擎可抓取
-- 结构化数据 (JSON-LD)
-- 动态 Meta 标签
-- 自动生成的站点地图
-- 语义化 URL
+## 文档和代码
 
-## 成本
-
-- **免费额度内**: $0
-- **超出后**: 约 $5-20/月
-
-## 许可证
-
-MIT License
-
-## 贡献
-
-欢迎提交 Issue 和 Pull Request!
-
-## 相关项目
-
-- [Chrome 扩展版](https://github.com/homxuwang/AIPriceCompareTool)
+- [审计、整改清单、Sitemap、用户流程与数据库关系图](docs/product-remediation.md)
+- [来源核验、运行、迁移、管理后台、API 与测试](docs/catalog-operations.md)
+- `src/frontend/catalog`：产品决策页面与共享组件。
+- `src/shared/catalog`：目录类型、核验数据、筛选/成本逻辑、SEO 和持久化。
+- `src/frontend/pages`：保留的手动工作区、提交页及历史页面。
+- `src/worker`：新旧 API、数据库发布和服务端页面。
+- `migrations`：追加迁移及旧数据库迁移登记引导。

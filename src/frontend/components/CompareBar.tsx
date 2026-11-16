@@ -1,6 +1,6 @@
 // OpenPriceHub · 对比栏 (文档 §11.5 / §15.1) — 选择工具后浮现,最多 4 个
 
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useT, useLocalePath } from '../i18n';
 import { useCompare } from '../context/CompareContext';

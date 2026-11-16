@@ -1,0 +1,132 @@
+// OpenPriceHub · App — /:lang 路由 + 全局 Provider
+
+import { useEffect } from "react";
+import {
+  BrowserRouter,
+  Routes,
+  Route,
+  Navigate,
+  useParams,
+  useLocation,
+} from "react-router-dom";
+import { LocaleProvider, isLocale, type Locale } from "./i18n";
+import { CurrencyProvider } from "./context/CurrencyProvider";
+import { CompareProvider } from "./context/CompareContext";
+import Layout from "./components/Layout";
+import Home from "./pages/Home";
+import Tools from "./pages/Tools";
+import Submit from "./catalog/SubmitExpansion";
+import Soon from "./pages/Soon";
+import { CatalogProvider } from "./catalog/context";
+import {
+  CatalogDirectory,
+  ProductDetail,
+  AlternativesPage,
+  ComparePage,
+  CalculatorPage,
+  MethodologyPage,
+  NotFound,
+} from "./catalog/pages";
+import { CatalogAdmin } from "./catalog/admin";
+import { CatalogSEO } from "./catalog/seo";
+import { useSearchParams } from "react-router-dom";
+function TtsAlias() {
+  const loc = useLocation();
+  return (
+    <Navigate
+      replace
+      to={loc.pathname.replace("ai-tts", "ai-voice") + loc.search}
+    />
+  );
+}
+function DirectoryEntry() {
+  const [params] = useSearchParams();
+  return params.get("dataset") === "legacy" ||
+    params.get("category") === "llm-api" ? (
+    <Tools />
+  ) : (
+    <CatalogDirectory />
+  );
+}
+import ManualCompareWorkspace from "./pages/ManualCompareWorkspace";
+
+// 同步 <html lang>
+function LocaleSync({ locale }: { locale: Locale }) {
+  useEffect(() => {
+    document.documentElement.lang = locale === "en" ? "en" : "zh-CN";
+  }, [locale]);
+  return null;
+}
+
+function LocaleShell({ defaultLocale }: { defaultLocale?: Locale }) {
+  const { lang: routeLang } = useParams();
+  const lang = defaultLocale || routeLang;
+  if (!isLocale(lang)) return <Navigate to="/zh" replace />;
+
+  return (
+    <LocaleProvider locale={lang}>
+      <CurrencyProvider initial={lang === "en" ? "USD" : "CNY"}>
+        <CatalogProvider>
+          <CompareProvider>
+            <CatalogSEO />
+            <LocaleSync locale={lang} />
+            <Layout>
+              <Routes>
+                <Route index element={<Home />} />
+                <Route path="tools" element={<DirectoryEntry />} />
+                <Route path="tools/:slug" element={<ProductDetail />} />
+                <Route path="compare" element={<ComparePage />} />
+                <Route path="calculator" element={<ManualCompareWorkspace />} />
+                <Route
+                  path="manual-compare"
+                  element={<ManualCompareWorkspace />}
+                />
+                <Route path="guides" element={<MethodologyPage />} />
+                <Route path="guides/:slug" element={<Soon />} />
+                <Route path="category/ai-tts" element={<TtsAlias />} />
+                <Route
+                  path="category/:category"
+                  element={<CatalogDirectory />}
+                />
+                <Route path="pricing/:pricing" element={<CatalogDirectory />} />
+                <Route
+                  path="alternatives"
+                  element={<CatalogDirectory alternativeMode />}
+                />
+                <Route
+                  path="alternatives/:slug"
+                  element={<AlternativesPage />}
+                />
+                <Route path="compare/:pair" element={<ComparePage />} />
+                <Route path="calculator/:kind" element={<CalculatorPage />} />
+                <Route path="submit" element={<Submit />} />
+                <Route path="about" element={<MethodologyPage />} />
+                <Route path="admin" element={<CatalogAdmin />} />
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </Layout>
+          </CompareProvider>
+        </CatalogProvider>
+      </CurrencyProvider>
+    </LocaleProvider>
+  );
+}
+
+function App() {
+  return (
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<Navigate to="/zh" replace />} />
+        <Route
+          path="/manual-compare"
+          element={<Navigate to="/zh/manual-compare" replace />}
+        />
+        <Route path="/zh/*" element={<LocaleShell defaultLocale="zh" />} />
+        <Route path="/en/*" element={<LocaleShell defaultLocale="en" />} />
+        <Route path="/*" element={<LocaleShell defaultLocale="en" />} />
+      </Routes>
+    </BrowserRouter>
+  );
+}
+
+export default App;

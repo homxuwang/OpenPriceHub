@@ -1,6 +1,5 @@
 // OpenPriceHub · 占位页 (里程碑 2 待建页面)
 
-import React from 'react';
 import { Link } from 'react-router-dom';
 import { useT, useLocalePath } from '../i18n';
 

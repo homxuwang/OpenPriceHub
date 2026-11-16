@@ -6,7 +6,9 @@ compatibility_flags = ["nodejs_compat"]
 # 静态资源配置
 [assets]
 directory = "./dist"
-not_found_handling = "404-page"
+binding = "ASSETS"
+not_found_handling = "single-page-application"
+run_worker_first = true
 
 # D1 数据库配置
 [[d1_databases]]
@@ -19,16 +21,7 @@ database_id = "your-database-id-here"
 binding = "KV"
 id = "your-kv-id-here"
 
-# 环境变量
+# Local development only. Production configuration is generated from ignored config/*.local.json.
+# Administrator credentials belong in .dev.vars locally and Cloudflare Secrets in production.
 [vars]
-ADMIN_KEY = "your-secret-admin-key"
-
-# 生产环境配置
-[env.production]
-name = "ai-price-compare"
-vars = { ADMIN_KEY = "your-production-admin-key" }
-
-# 开发环境配置
-[env.development]
-name = "ai-price-compare-dev"
-vars = { ADMIN_KEY = "dev-admin-key" }
+SITE_URL = "http://localhost:3001"

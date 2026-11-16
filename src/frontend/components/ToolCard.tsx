@@ -1,6 +1,5 @@
 // OpenPriceHub · 工具卡片 (文档 §6.6 / §7.7)
 
-import React from 'react';
 import { Link } from 'react-router-dom';
 import type { Tool } from '../../shared/types';
 import { useT, useLocalePath, useLocale } from '../i18n';
@@ -16,16 +15,18 @@ export function priceLabel(
   t: (k: string) => any
 ): string {
   if (tool.pricingModel === 'api' || tool.pricingModel === 'usage') return t('pricing.usage');
-  if (!tool.fromPrice) return t('pricing.free');
+  if (tool.fromPrice == null) return t('common.priceUnknown');
+  if (tool.fromPrice === 0) return t('pricing.free');
   return `${t('common.from')} ${format(tool.fromPrice, tool.fromCurrency)}${t('common.perMonth')}`;
 }
 
-export function ToolCard({ tool }: { tool: Tool }) {
+export function ToolCard({ tool, preview = false }: { tool: Tool; preview?: boolean }) {
   const t = useT();
   const lp = useLocalePath();
   const locale = useLocale();
   const { format, isConverted } = useCurrency();
   const compare = useCompare();
+  const destination = preview ? `/tools?q=${encodeURIComponent(tool.name)}` : `/tools/${tool.slug}`;
   const inCompare = compare.has(tool.slug);
 
   const approx = tool.fromPrice ? isConverted(tool.fromCurrency) : false;
@@ -39,7 +40,7 @@ export function ToolCard({ tool }: { tool: Tool }) {
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2">
             <Link
-              to={lp(`/tools/${tool.slug}`)}
+              to={lp(destination)}
               className="truncate font-display text-base font-semibold text-ink hover:text-primary"
             >
               {tool.name}
@@ -47,7 +48,7 @@ export function ToolCard({ tool }: { tool: Tool }) {
           </div>
           <p className="mt-1 line-clamp-2 text-sm text-ink-2">{tagline}</p>
         </div>
-        <button
+        {!preview && <button
           onClick={() => compare.toggle(tool.slug)}
           aria-pressed={inCompare}
           title={t('common.addCompare')}
@@ -58,9 +59,10 @@ export function ToolCard({ tool }: { tool: Tool }) {
           }`}
         >
           {inCompare ? '✓' : '+'}
-        </button>
+        </button>}
       </div>
 
+      {preview && <span className="mt-3 w-fit rounded-md bg-warn-soft px-2 py-1 text-xs text-warn">{t('home.samplePrice')}</span>}
       {/* 价格 + 成本收据 */}
       <div className="mt-4 flex items-end justify-between gap-3">
         <div>
@@ -96,18 +98,18 @@ export function ToolCard({ tool }: { tool: Tool }) {
       </div>
 
       {/* 底部: 可信度 + 更新时间 + 详情 */}
-      <div className="mt-4 flex items-center justify-between border-t border-line-2 pt-3">
+      {!preview && <div className="mt-4 flex items-center justify-between border-t border-line-2 pt-3">
         <div className="flex items-center gap-2">
           <ConfidenceBadge status={tool.confidence} />
           <CommercialBadge value={tool.commercialUse} />
         </div>
-      </div>
+      </div>}
       <div className="mt-2 flex items-center justify-between">
         <span className="text-xs text-ink-2">
-          {t('common.lastUpdated')} {tool.lastUpdated}
+          {preview ? t('home.sampleRecord') : t('common.lastUpdated')} {tool.lastUpdated}
         </span>
-        <Link to={lp(`/tools/${tool.slug}`)} className="text-xs font-semibold text-primary hover:text-primary-700">
-          {t('common.viewDetails')} →
+        <Link to={lp(destination)} className="text-xs font-semibold text-primary hover:text-primary-700">
+          {preview ? t('home.browseTool') : t('common.viewDetails')} →
         </Link>
       </div>
     </div>

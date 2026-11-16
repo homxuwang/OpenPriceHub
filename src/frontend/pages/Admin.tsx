@@ -1,6 +1,6 @@
 // AI Price Compare Web - 管理后台页面
 
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { CATEGORY_LABELS, PRICING_MODE_LABELS } from '../../shared/constants';
 import Loading from '../components/Loading';
 import Sheet from '../components/Sheet';

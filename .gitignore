@@ -36,3 +36,12 @@ yarn-error.log*
 
 # Misc
 *.tsbuildinfo
+
+# Local Cloudflare configuration, secrets, generated configs and database exports
+config/*.local.json
+.cloudflare-local/
+backups/
+.dev.vars.*
+!.dev.vars.example
+.env.*
+!.env.example

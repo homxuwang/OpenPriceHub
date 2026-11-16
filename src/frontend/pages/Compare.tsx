@@ -1,6 +1,6 @@
 // AI Price Compare Web - 对比工具页
 
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { API_PATHS, CATEGORY_LABELS } from '../../shared/constants';
 import CompareChart from '../components/CompareChart';
 import Loading from '../components/Loading';

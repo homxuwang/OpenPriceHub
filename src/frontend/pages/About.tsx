@@ -1,6 +1,5 @@
 // OpenPriceHub · 关于页面 — 项目图纸说明
 
-import React from 'react';
 import { Link } from 'react-router-dom';
 import Sheet from '../components/Sheet';
 import DimDivider from '../components/DimDivider';

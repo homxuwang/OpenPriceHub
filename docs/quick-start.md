@@ -1,75 +1,33 @@
-# AI Price Compare Web - 快速开始
+# OpenPriceHub 快速开始
 
-## 30 秒快速体验
-
-```bash
-# 克隆项目
-git clone https://github.com/your-username/ai-price-compare-web.git
-cd ai-price-compare-web
-
-# 一键部署到 Cloudflare
-npm run deploy        # Linux/macOS
-npm run deploy:win    # Windows
-```
-
----
-
-## 功能特性
-
-- 🔍 **价格查询**: 浏览不同平台上 AI 模型的定价信息
-- 📊 **跨平台对比**: 选择多个模型，查看各平台的价格差异
-- 💰 **积分换算**: 自动将积分套餐换算成单位价格
-- 👥 **众包数据**: 用户可以提交新价格，经审核后展示
-- 🔍 **SEO 优化**: 搜索引擎友好的 SSR 渲染
-- 📱 **响应式设计**: 支持移动端访问
-
----
-
-## 技术栈
-
-| 层级 | 技术 |
-|------|------|
-| 前端 | React 18 + Vite + Tailwind CSS |
-| 后端 | Cloudflare Workers |
-| 数据库 | Cloudflare D1 |
-| 部署 | Cloudflare Pages |
-
----
-
-## 命令参考
+## 本地开发
 
 ```bash
-# 一键部署
-npm run deploy            # Linux/macOS
-npm run deploy:win        # Windows
-
-# 开发
-npm run dev               # 启动前端
-npm run worker:dev        # 启动后端
-
-# 数据库
-npm run db:init           # 初始化本地数据库
-npm run db:seed           # 导入示例数据
-
-# 测试
-npm test                  # 运行测试
-
-# 部署
-npm run worker:deploy     # 部署到 Cloudflare
+npm ci
+# 已有 .dev.vars 不要覆盖；新环境参考 .dev.vars.example 填写独立的本地管理员密钥
+npm run db:migrate
+npm run worker:dev
+# 另一个终端：
+npm run dev
 ```
 
----
+前端 `http://localhost:3001/zh`，API 运行在 8787。管理员入口 `/zh/admin`；开发者提交 `/zh/submit/website`。
 
-## 部署后
+本地开发的旧种子数据仅供历史兼容及演示，不代表最新官方报价。当前功能与测试范围见对应阶段报告。
 
-- **访问地址**: `https://ai-price-compare.workers.dev`
-- **管理后台**: `https://ai-price-compare.workers.dev/admin`
-- **API 地址**: `https://ai-price-compare.workers.dev/api/platforms`
+## 配置 Cloudflare 部署
 
----
+```bash
+npm run cf:init
+# 编辑 config/cloudflare.local.json 和 config/cloudflare.secrets.local.json
+npm run cf:check
+npm run cf:plan
+# 由你确认目标后在本机执行：
+npm run cf:deploy -- --apply
+```
 
-## 更多文档
+普通参数和密钥分别保存在被 Git 忽略的本地 JSON 中。默认不把旧演示数据迁入生产，部署前自动备份 D1。未带 --apply 仅显示计划，不执行远程操作。
 
-- [配置文档](./docs/configuration.md)
-- [部署指南](./docs/deployment.md)
-- [API 文档](./docs/api.md)
+实际访问地址以你填写的 siteUrl 为准，不从账号 ID 猜测 workers.dev 子域名。Cloudflare 部署采用 Workers 静态资源与 D1。
+
+详见[私有配置、迁移与部署](./cloudflare-private-deployment-v1.0.0.md)、[配置文档](./configuration.md)、[部署指南](./deployment.md)。

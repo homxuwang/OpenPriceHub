@@ -1,6 +1,5 @@
 // OpenPriceHub · 加载 (浅色)
 
-import React from 'react';
 
 interface LoadingProps {
   size?: 'sm' | 'md' | 'lg';

@@ -83,6 +83,17 @@ export interface Scenario {
   imageCount: number;
   videoSeconds: number;
   audioMinutes: number;
+  ttsMinutes?: number;
+  musicMinutes?: number;
+  textCachedTokens?: number;
+  ttsCharacters?: number;
+  musicSongs?: number;
+  musicGenerations?: number;
+  musicSecondsPerSong?: number;
+  videoCount?: number;
+  videoSecondsPerVideo?: number;
+  creditCount?: number;
+  usagePeriod?: 'request' | 'month' | 'year';
 }
 
 // 汇率
@@ -166,6 +177,7 @@ export interface Env {
   DB: D1Database;
   KV: KVNamespace;
   ADMIN_KEY: string;
+  SITE_URL?: string;
   ASSETS: { fetch: typeof fetch };
 }
 
@@ -173,7 +185,7 @@ export interface Env {
 // Studio 产品模型 — AI 工具比价 (里程碑 1, 前端 mock)
 // ============================================================
 
-export type ToolCategory = 'image' | 'video' | 'llm-api';
+export type ToolCategory = 'image' | 'video' | 'voice' | 'music' | 'llm-api';
 
 // 价格可信度 (文档 §15.2)
 export type PriceConfidence =

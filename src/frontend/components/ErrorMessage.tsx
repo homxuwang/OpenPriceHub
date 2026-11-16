@@ -1,6 +1,5 @@
 // OpenPriceHub · 错误提示 (浅色)
 
-import React from 'react';
 
 interface ErrorMessageProps {
   message: string;

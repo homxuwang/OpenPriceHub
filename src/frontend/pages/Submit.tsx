@@ -1,7 +1,7 @@
 // OpenPriceHub · 手动录入 / 提交价格 (文档 §12 + 参考 AIPriceCompareTool quick-entry)
 // 里程碑 1: 纯前端本地 state + 实时预览,暂不接后端(待确认)。
 
-import React, { useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useT, useLocale, useLocalePath } from '../i18n';
 import { Link } from 'react-router-dom';
 import { MOCK_TOOLS } from '../mock/tools';
@@ -125,8 +125,8 @@ function Submit() {
         <span className="mx-auto inline-flex items-center gap-1 rounded-full bg-success-soft px-2.5 py-1 text-sm font-semibold text-success">
           ✓ OK
         </span>
-        <h1 className="mt-4 font-display text-2xl font-bold text-ink">{t('submit.successTitle')}</h1>
-        <p className="mx-auto mt-2 max-w-md text-sm text-ink-2">{t('submit.successDesc')}</p>
+        <h1 className="mt-4 font-display text-2xl font-bold text-ink">{locale === 'zh' ? '本地预览完成（尚未提交）' : 'Local preview complete (not submitted)'}</h1>
+        <p className="mx-auto mt-2 max-w-md text-sm text-ink-2">{locale === 'zh' ? '这份价格仍是本地预览。请使用网站提交入口保存到管理员审核队列。' : 'This is a local preview. Use the website submission form to send it for administrator review.'}</p>
         <div className="mt-6 flex justify-center gap-3">
           <button onClick={() => { setF(INITIAL); setDone(false); }} className="btn-primary">{t('submit.again')}</button>
           <Link to={lp('/tools')} className="btn-secondary">{t('soon.browse')}</Link>
@@ -144,6 +144,8 @@ function Submit() {
         <h1 className="mt-2 font-display text-3xl font-bold text-ink">{t('submit.title')}</h1>
         <p className="mt-2 max-w-2xl text-ink-2">{t('submit.subtitle')}</p>
       </div>
+
+      <div className="card mb-6 p-4"><Link className="text-primary font-semibold" to={lp('/submit/website')}>{locale === 'zh' ? '独立开发者？提交我的网站与价格 →' : 'Independent developer? Submit my website and prices →'}</Link><p className="mt-2 text-sm text-ink-2">{locale === 'zh' ? '下方保留原有本地价格预览；网站提交入口会保存到待审核队列，审核后才公开。' : 'The original local price preview remains below. Website submissions are stored for review and published only after approval.'}</p></div>
 
       <div className="grid gap-6 lg:grid-cols-[1.4fr_1fr]">
         {/* —— 表单 —— */}
@@ -290,7 +292,7 @@ function Submit() {
           </section>
 
           <button type="submit" disabled={!preview.valid} className="btn-primary w-full">
-            {t('submit.submitBtn')}
+            {locale === 'zh' ? '完成本地价格预览' : 'Complete local price preview'}
           </button>
         </form>
 

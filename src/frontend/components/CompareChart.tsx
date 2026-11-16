@@ -1,6 +1,5 @@
 // OpenPriceHub · 对比图表 — 蓝图测量条
 
-import React from 'react';
 
 interface ChartData {
   platformName: string;

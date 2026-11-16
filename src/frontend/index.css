@@ -158,3 +158,15 @@ body {
     scroll-behavior: auto !important;
   }
 }
+
+/* Shared price-decision layouts: compact table on desktop, labeled cards on mobile. */
+.product-table td { overflow-wrap: anywhere; }
+@media (max-width: 767px) {
+  .product-table, .product-table tbody, .product-table tr, .product-table td { display: block; }
+  .product-table thead { display: none; }
+  .product-table tr { padding: 0.75rem; }
+  .product-table td { padding: 0.4rem 0.25rem; }
+  .product-table td[data-label] { display: grid; grid-template-columns: 7rem minmax(0,1fr); gap: 0.65rem; }
+  .product-table td[data-label]::before { content: attr(data-label); color: #6b7280; font: 500 0.75rem/1.4 Inter,system-ui,sans-serif; }
+  .product-table td > div, .product-table td > span { grid-column: 2; }
+}

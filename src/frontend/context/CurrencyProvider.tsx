@@ -5,7 +5,7 @@ import { DEFAULT_EXCHANGE_RATES } from '../../shared/constants';
 
 export type Currency = 'USD' | 'CNY';
 
-const RATES = DEFAULT_EXCHANGE_RATES.rates; // { CNY: 1, USD: 7.2, HKD: 0.92 } (相对 CNY)
+const RATES: Record<string, number> = DEFAULT_EXCHANGE_RATES.rates; // { CNY: 1, USD: 7.2, HKD: 0.92 } (相对 CNY)
 const SYMBOL: Record<Currency, string> = { USD: '$', CNY: '¥' };
 const STORAGE_KEY = 'oph.currency';
 
@@ -49,8 +49,10 @@ export function CurrencyProvider({
 
   // 首次挂载读 localStorage 覆盖默认
   useEffect(() => {
-    const saved = typeof window !== 'undefined' ? window.localStorage.getItem(STORAGE_KEY) : null;
-    if (saved === 'USD' || saved === 'CNY') setCurrencyState(saved);
+    try {
+      const saved = window.localStorage.getItem(STORAGE_KEY);
+      if (saved === 'USD' || saved === 'CNY') setCurrencyState(saved);
+    } catch { /* Storage can be unavailable in private or restricted browsers. */ }
   }, []);
 
   const setCurrency = useCallback((c: Currency) => {

@@ -1,0 +1,122 @@
+import { useEffect } from "react";
+import {
+  BrowserRouter,
+  Routes,
+  Route,
+  Navigate,
+  useParams,
+  useLocation,
+} from "react-router-dom";
+import { LocaleProvider, type Locale } from "./i18n";
+import { CurrencyProvider } from "./context/CurrencyProvider";
+import { CompareProvider } from "./context/CompareContext";
+import { CatalogProvider } from "./catalog/context";
+import Layout from "./components/Layout";
+import LegacyHome from "./pages/Home";
+import LegacyTools from "./pages/Tools";
+import Soon from "./pages/Soon";
+import { LegacyPathContext } from "./i18n";
+import Submit from "./pages/Submit";
+import ManualCompareWorkspace from "./pages/ManualCompareWorkspace";
+import {
+  CatalogHome,
+  CatalogDirectory,
+  ProductDetail,
+  AlternativesPage,
+  ComparePage,
+  CalculatorPage,
+  MethodologyPage,
+  NotFound,
+} from "./catalog/pages";
+import { CatalogSEO } from "./catalog/seo";
+import { CatalogAdmin } from "./catalog/admin";
+function LegacyPage({ home = false }: { home?: boolean }) {
+  return <LegacyPathContext.Provider value={true}>
+    <div role="note" className="mb-6 rounded-lg border border-line bg-surface-2 p-4 text-sm">
+      原版功能 / Classic workspace — 此页面保留原版布局、筛选与示例数据。价格、热度及推广内容属于历史演示，未经当前核验；请以新版核验目录和官方来源为准。
+    </div>
+    {home ? <LegacyHome /> : <LegacyTools />}
+  </LegacyPathContext.Provider>;
+}
+function TtsAlias() {
+  const location = useLocation();
+  return (
+    <Navigate
+      replace
+      to={
+        (location.pathname.startsWith("/zh") ? "/zh" : "") +
+        "/category/ai-voice" +
+        location.search
+      }
+    />
+  );
+}
+function Shell({ locale }: { locale: Locale }) {
+  useEffect(() => {
+    document.documentElement.lang = locale === "zh" ? "zh-CN" : "en";
+  }, [locale]);
+  return (
+    <LocaleProvider locale={locale}>
+      <CurrencyProvider initial={locale === "zh" ? "CNY" : "USD"}>
+        <CatalogProvider>
+          <CompareProvider>
+            <CatalogSEO />
+            <Layout>
+              <Routes>
+                <Route index element={<CatalogHome />} />
+                <Route path="classic" element={<LegacyPage home />} />
+                <Route path="classic/tools" element={<LegacyPage />} />
+                <Route path="classic/compare" element={<Soon />} />
+                <Route path="classic/tools/:slug" element={<Soon />} />
+                <Route path="tools" element={<CatalogDirectory />} />
+                <Route path="tools/:slug" element={<ProductDetail />} />
+                <Route path="category/ai-tts" element={<TtsAlias />} />
+                <Route
+                  path="category/:category"
+                  element={<CatalogDirectory />}
+                />
+                <Route path="pricing/:pricing" element={<CatalogDirectory />} />
+                <Route
+                  path="alternatives"
+                  element={<CatalogDirectory alternativeMode />}
+                />
+                <Route
+                  path="alternatives/:slug"
+                  element={<AlternativesPage />}
+                />
+                <Route path="compare" element={<ComparePage />} />
+                <Route path="compare/:pair" element={<ComparePage />} />
+                <Route path="calculator" element={<ManualCompareWorkspace />} />
+                <Route path="calculator/:kind" element={<CalculatorPage />} />
+                <Route
+                  path="manual-compare"
+                  element={<ManualCompareWorkspace />}
+                />
+                <Route path="submit" element={<Submit />} />
+                <Route path="about" element={<MethodologyPage />} />
+                <Route path="guides" element={<MethodologyPage />} />
+                <Route path="admin" element={<CatalogAdmin />} />
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </Layout>
+          </CompareProvider>
+        </CatalogProvider>
+      </CurrencyProvider>
+    </LocaleProvider>
+  );
+}
+function Localized() {
+  const { lang } = useParams();
+  return <Shell locale={lang === "zh" ? "zh" : "en"} />;
+}
+export default function App() {
+  return (
+    <BrowserRouter>
+      <Routes>
+        <Route path="/zh/*" element={<Shell locale="zh" />} />
+        <Route path="/en/*" element={<Localized />} />
+        <Route path="/*" element={<Shell locale="en" />} />
+      </Routes>
+    </BrowserRouter>
+  );
+}

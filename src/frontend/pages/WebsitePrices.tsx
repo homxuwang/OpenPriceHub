@@ -1,0 +1,24 @@
+import { useEffect,useState } from 'react';
+import { Link } from 'react-router-dom';
+import type { WebsiteDraft } from '../../shared/websiteSubmission';
+import { UNIT_LABELS,type ManualUnit } from '../../shared/manualUnits';
+import { useLocale,useLocalePath } from '../i18n';
+import { websiteApi } from '../websites/api';
+interface Listing extends WebsiteDraft {id:string;revision:string;verifiedAt:string}
+export default function WebsitePrices(){
+ const lang=useLocale(),zh=lang==='zh',lp=useLocalePath(),tr=(a:string,b:string)=>zh?a:b;
+ const [listings,setListings]=useState<Listing[]>([]),[error,setError]=useState(''),[loading,setLoading]=useState(true),[category,setCategory]=useState('all'),[relationship,setRelationship]=useState('all');
+ useEffect(()=>{let alive=true;websiteApi<{listings:Listing[]}>('').then(d=>{if(alive)setListings(d.listings);}).catch(e=>{if(alive)setError(e.message);}).finally(()=>{if(alive)setLoading(false);});return()=>{alive=false;};},[]);
+ const rel=(r:string)=>r==='official'?tr('官方渠道','Official channel'):r==='third_party'?tr('第三方渠道','Third-party channel'):tr('独立开发者','Independent developer');
+ const cats:{[key:string]:string}={all:tr('全部分类','All categories'),image:tr('AI 生图','AI Image'),video:tr('AI 生视频','AI Video'),voice:'TTS',music:tr('音乐生成','Music'),'llm-api':'LLM / API'};
+ const visible=listings.filter(l=>(category==='all'||category===l.category)&&(relationship==='all'||relationship===l.relationship));
+ return <div className="space-y-5"><h1 className="font-display text-3xl font-bold">{tr('网站与渠道报价','Website and channel prices')}</h1><p className="text-ink-2">{tr('展示管理员审核发布的原币种价格。官方、第三方和独立开发者分别标识，不混排不同单位或月费。审核时间不代表永远有效，购买前请确认来源页面。','Administrator-reviewed prices in their original currency. Official, third-party and independent channels are identified separately. Monthly fees and different units are not ranked together. Confirm current terms at the source before purchase.')}</p><Link className="btn-primary inline-flex" to={lp('/submit/website')}>{tr('提交我的网站','Submit my website')}</Link>
+ <div className="flex flex-wrap gap-3"><label><span className="label">{tr('分类','Category')}</span><select aria-label={tr('分类','Category')} className="input" value={category} onChange={e=>setCategory(e.target.value)}>{Object.entries(cats).map(([v,l])=><option key={v} value={v}>{l}</option>)}</select></label><label><span className="label">{tr('渠道类型','Channel type')}</span><select aria-label={tr('渠道类型','Channel type')} className="input" value={relationship} onChange={e=>setRelationship(e.target.value)}>{['all','official','third_party','independent'].map(r=><option key={r} value={r}>{r==='all'?tr('全部渠道','All channels'):rel(r)}</option>)}</select></label></div>
+ {loading&&<p role="status">{tr('加载中…','Loading…')}</p>}{error&&<p role="alert" className="break-words">{error}</p>}{!loading&&!error&&!visible.length&&<p>{tr('暂无符合条件的已发布报价。','No published prices match these filters.')}</p>}
+ {visible.map(l=><article className="card space-y-4 p-5" key={l.id}><header><h2 className="text-xl font-semibold"><a className="text-primary" href={l.website} target="_blank" rel="noopener noreferrer nofollow">{l.name} ↗</a></h2><p className="text-sm text-ink-2">{rel(l.relationship)} · {cats[l.category]} · {tr('核对时间','Reviewed')}: {l.verifiedAt}</p><p className="mt-2 whitespace-pre-wrap break-words">{l.description}</p></header>
+ {l.plans.map((p,i)=><section className="rounded-lg border border-line p-4 space-y-2" key={i}><h3 className="font-semibold">{p.name}</h3><p>{tr('购买金额','Purchase amount')}: {p.amount===null?tr('未知','Unknown'):`${p.amount} ${p.currency}`} · {p.billing}</p><p className="text-sm">{p.pricingModels.join(' · ')}</p>{p.creditAmount!==null&&<p className="text-sm">{tr('积分','Credits')}: {p.creditAmount} · {tr('积分池','Pool')}: {p.creditPool} · {tr('可叠加','Stackable')}: {p.stackable===null?tr('未知','Unknown'):p.stackable?tr('是','Yes'):tr('否','No')}</p>}
+ {p.components.map((c,k)=><p key={k} className="text-sm break-words">{[c.modelName,c.resolution,c.quality,c.durationSeconds?`${c.durationSeconds}s`:''].filter(Boolean).join(' · ')} · {UNIT_LABELS[lang][c.unit as ManualUnit]||c.unit}: {c.rate===null?tr('现金单价未知','Cash rate unknown'):`${c.rate} ${p.currency}`}{c.creditsPerUnit!==null?` · ${c.creditsPerUnit} ${tr('积分/单位','credits/unit')}`:''}{c.included!==null?` · ${tr('免费计量额度','Included units')}: ${c.included}`:''}{c.overage!==null?` · ${tr('超额单价','Overage')}: ${c.overage} ${p.currency}`:''}</p>)}
+ {p.freeAllowance&&<p className="text-sm">{tr('免费额度','Free allowance')}: {p.freeAllowance}</p>}{p.restrictions&&<p className="text-sm whitespace-pre-wrap break-words">{tr('限制','Limits')}: {p.restrictions}</p>}<a href={p.sourceUrl} className="inline-block text-primary text-sm" target="_blank" rel="noopener noreferrer nofollow">{tr('查看价格来源','View pricing source')} ↗</a></section>)}
+ </article>)}
+ </div>;
+}

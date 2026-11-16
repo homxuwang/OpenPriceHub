@@ -1,5 +1,7 @@
 # AI Price Compare Web - 开发指南
 
+> 新版目录、兼容迁移和启动方式请先查看 [运营说明](./catalog-operations.md)。本文保留原有平台/模型接口资料；当前数据库结构以 migrations 为准。
+
 ## 环境搭建
 
 ### 1. 安装必要软件
@@ -38,25 +40,15 @@ npm install
 cp .env.example .env
 ```
 
-编辑 `.env` 文件，填入你的 Cloudflare 配置。
+`.env` 只填写公开的前端参数。Cloudflare 部署先运行 `npm run cf:init`，在被忽略的 `config/cloudflare.local.json` 与 `config/cloudflare.secrets.local.json` 分别填写普通参数和密钥；本地 Worker 密钥放在 `.dev.vars`，不能放进 VITE_*。
 
-### 5. 初始化数据库
+### 5. 初始化本地数据库
 
 ```bash
-# 登录 Cloudflare
-npx wrangler login
-
-# 创建 D1 数据库
-npx wrangler d1 create ai-price-compare
-
-# 更新 wrangler.toml 中的 database_id
-
-# 初始化数据库
-npm run db:init
-
-# 导入示例数据
-npm run db:seed
+npm run db:migrate
 ```
+
+本地模式不需要 Cloudflare 登录。该命令会保留已有数据；历史演示数据只用于本地兼容性。生产资源由你在 Cloudflare 创建并填写到本地 JSON，按[私有部署说明](./cloudflare-private-deployment-v1.0.0.md)执行，不直接改写仓库 wrangler.toml。
 
 ---
 
@@ -125,7 +117,7 @@ interface Props {
 
 export const MyComponent: React.FC<Props> = ({ title, onSubmit }) => {
   const [loading, setLoading] = useState(false);
-  
+
   return (
     <div>
       <h1>{title}</h1>
@@ -182,7 +174,7 @@ describe('calculateUnitPrice', () => {
       output_price: 0.015,
       credits_consumed: 1
     });
-    
+
     expect(result).toBe(0.01);
   });
 });
@@ -201,7 +193,8 @@ npm run build
 ### 部署到 Cloudflare
 
 ```bash
-npm run worker:deploy
+npm run cf:plan
+npm run cf:deploy -- --apply
 ```
 
 ### 本地预览

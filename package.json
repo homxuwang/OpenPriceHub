@@ -8,16 +8,25 @@
     "build": "vite build",
     "preview": "vite preview",
     "worker:dev": "wrangler dev",
-    "worker:deploy": "wrangler deploy",
-    "deploy": "bash scripts/deploy.sh",
+    "worker:deploy": "node scripts/cloudflare.mjs deploy",
+    "deploy": "node scripts/cloudflare.mjs deploy",
     "deploy:win": "scripts\\deploy.bat",
     "db:init": "wrangler d1 execute ai-price-compare --local --file=./migrations/0001_init.sql",
-    "db:init:remote": "wrangler d1 execute ai-price-compare --remote --file=./migrations/0001_init.sql",
+    "db:init:remote": "node scripts/cloudflare.mjs migrate",
     "db:seed": "wrangler d1 execute ai-price-compare --local --file=./migrations/0002_seed.sql",
-    "db:seed:remote": "wrangler d1 execute ai-price-compare --remote --file=./migrations/0002_seed.sql",
     "test": "vitest run",
     "test:watch": "vitest",
-    "lint": "eslint src --ext .ts,.tsx"
+    "lint": "eslint src --ext .ts,.tsx",
+    "typecheck": "tsc --noEmit",
+    "db:migrate": "node scripts/migrate.mjs --local",
+    "catalog:seed": "vite-node scripts/catalog-seed.ts",
+    "db:migrate:remote": "node scripts/cloudflare.mjs migrate",
+    "cf:init": "node scripts/cloudflare.mjs init",
+    "cf:check": "node scripts/cloudflare.mjs check",
+    "cf:plan": "node scripts/cloudflare.mjs plan",
+    "cf:backup": "node scripts/cloudflare.mjs backup",
+    "cf:migrate": "node scripts/cloudflare.mjs migrate",
+    "cf:deploy": "node scripts/cloudflare.mjs deploy"
   },
   "dependencies": {
     "react": "^18.3.1",
@@ -36,7 +45,8 @@
     "typescript": "^5.4.5",
     "vite": "^5.2.12",
     "vitest": "^1.6.0",
-    "wrangler": "^3.57.0"
+    "wrangler": "^3.57.0",
+    "vite-node": "^1.6.0"
   },
   "packageManager": "pnpm@11.5.2+sha512.71c631e382066efc25625d5cf029075de07b61b37f6e27350fbd84b1bda5864c8c1967adc280776b45c30a715c0359a3be08fef42d5bb09e2b99029979692916"
 }

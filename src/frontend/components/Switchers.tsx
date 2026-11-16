@@ -1,6 +1,5 @@
 // OpenPriceHub · 语言 / 货币切换器
 
-import React from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useLocale, LOCALES, type Locale } from '../i18n';
 import { useCurrency, type Currency } from '../context/CurrencyProvider';

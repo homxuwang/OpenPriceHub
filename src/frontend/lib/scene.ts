@@ -4,24 +4,28 @@ import type { ToolCategory } from '../../shared/types';
 
 export const SCENE_TEXT: Record<ToolCategory, string> = {
   image: 'text-scene-image',
+  voice: 'text-emerald-700', music: 'text-amber-700',
   video: 'text-scene-video',
   'llm-api': 'text-scene-llm',
 };
 
 export const SCENE_BG_SOFT: Record<ToolCategory, string> = {
   image: 'bg-primary-50',
+  voice: 'bg-emerald-50', music: 'bg-amber-50',
   video: 'bg-accent-soft',
   'llm-api': 'bg-[#F3EEFF]',
 };
 
 export const SCENE_RING: Record<ToolCategory, string> = {
   image: 'ring-scene-image/25',
+  voice: 'ring-emerald-700/25', music: 'ring-amber-700/25',
   video: 'ring-scene-video/25',
   'llm-api': 'ring-scene-llm/25',
 };
 
 export const SCENE_HEX: Record<ToolCategory, string> = {
   image: '#4F46E5',
+  voice: '#047857', music: '#B45309',
   video: '#06B6D4',
   'llm-api': '#7C3AED',
 };
