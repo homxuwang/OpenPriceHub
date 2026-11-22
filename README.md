@@ -1,3 +1,5 @@
+> 新增整改：统一真实目录 Repository、旧写接口鉴权、账户角色与 DNS 验证、来源检查/采集候选和自动参考汇率。详见[实现与验收说明 v1.0.0](docs/real-data-operations-v1.0.0.md)。本地迁移已完成，生产启用仍需配置并部署。
+
 > Cloudflare 迁移/部署：`npm run cf:init` 创建私有配置文件，本地填写后运行 `cf:check`、`cf:plan`。实际执行使用 `npm run cf:deploy -- --apply`，密钥不写入仓库或构建。详见[部署说明 v1.0.0](docs/cloudflare-private-deployment-v1.0.0.md)。
 
 > 新增：官方/第三方/独立开发者渠道报价、网站提交与管理员价格审核。入口 `/zh/submit/website`、`/zh/admin`、`/zh/websites`。本地 D1 已增量初始化，远程未迁移。详见[数据库与功能交付 v1.0.0](docs/channel-prices-developer-submissions-v1.0.0.md)。

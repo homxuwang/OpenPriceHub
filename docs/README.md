@@ -2,6 +2,8 @@
 
 当前阶段：
 
+- [统一数据、账户权限与动态运营整改 v1.0.0](./real-data-operations-v1.0.0.md)
+
 - [Mock First 阶段存档与下一阶段建议 v1.0.0](./mock-milestone-v1.0.0.md)
 
 - [Cloudflare 私有配置、迁移与部署 v1.0.0](./cloudflare-private-deployment-v1.0.0.md)

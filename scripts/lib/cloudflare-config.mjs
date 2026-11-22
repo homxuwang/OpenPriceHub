@@ -8,8 +8,10 @@ export const DEFAULT_SECRETS=join(ROOT,'config/cloudflare.secrets.local.json');
 const fail=key=>{throw new Error(`Invalid or missing configuration field: ${key}`);};
 function keys(object,allowed,field){if(!object||typeof object!=='object'||Array.isArray(object)||Object.keys(object).some(k=>!allowed.includes(k)))fail(field);}
 export function validateSettings(raw,secret){
- keys(raw,['schemaVersion','target','accountId','workerName','siteUrl','database','kvNamespaceId','workersDev','customDomain','includeSeedData'],'config');
+ keys(raw,['schemaVersion','target','accountId','workerName','siteUrl','database','kvNamespaceId','workersDev','customDomain','includeSeedData','cronSchedules','automaticFx'],'config');
  keys(secret,['CLOUDFLARE_API_TOKEN','ADMIN_KEY'],'secrets');
+ if(raw.cronSchedules!==undefined&&(!Array.isArray(raw.cronSchedules)||raw.cronSchedules.length>2||raw.cronSchedules.some(x=>!['0 1 * * *','0 1,13 * * *'].includes(x))))fail('cronSchedules (daily/twice-daily UTC)');
+ if(raw.automaticFx!==undefined&&typeof raw.automaticFx!=='boolean')fail('automaticFx');
  if(raw.schemaVersion!==1)fail('schemaVersion');
  if(!['production','staging'].includes(raw.target))fail('target');
  if(!/^[a-f0-9]{32}$/i.test(raw.accountId||''))fail('accountId');
@@ -44,9 +46,10 @@ export function sanitize(text,secrets){
 export function publicWrangler(config,runtime){
  const w={name:config.workerName,main:join(ROOT,'src/worker/index.ts'),compatibility_date:'2024-01-01',compatibility_flags:['nodejs_compat'],account_id:config.accountId,workers_dev:config.workersDev,
   assets:{directory:join(ROOT,'dist'),binding:'ASSETS',not_found_handling:'single-page-application',run_worker_first:true},
-  vars:{SITE_URL:config.siteUrl},
+  vars:{SITE_URL:config.siteUrl,...(config.automaticFx?{FX_SYNC_ENABLED:'true'}:{})},
   d1_databases:[{binding:'DB',database_name:config.database.name,database_id:config.database.id,migrations_dir:join(runtime,'migrations')}],
   send_metrics:false};
+ if(config.cronSchedules?.length)w.triggers={crons:config.cronSchedules};
  if(config.kvNamespaceId)w.kv_namespaces=[{binding:'KV',id:config.kvNamespaceId}];
  if(config.customDomain)w.routes=[{pattern:config.customDomain,custom_domain:true}];
  return w;

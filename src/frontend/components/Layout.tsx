@@ -21,14 +21,14 @@ const toolNavItems: { path: string; key: string }[] = [
   { path: '/websites', key: 'nav.channelPrices' },
   { path: '/tools?category=image', key: 'nav.image' },
   { path: '/tools?category=video', key: 'nav.video' },
-  { path: '/compare/tts', key: 'nav.voiceTools' },
-  { path: '/compare/music', key: 'nav.musicTools' },
+  { path: '/tools?category=voice', key: 'nav.voiceTools' },
+  { path: '/tools?category=music', key: 'nav.musicTools' },
   { path: '/tools?category=llm-api', key: 'nav.llmApi' },
 ];
 
 const costNavItems = [
   { path: '/calculator', key: 'nav.calculator' },
-  { path: '/discovery-lab', key: 'nav.discoveryLab' },
+  { path: '/discovery-lab', key: 'nav.discoveryLabMock' },
 ];
 
 function Mark() {

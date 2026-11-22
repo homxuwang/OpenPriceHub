@@ -1,13 +1,8 @@
+import { administrator } from '../services/auth';
 // AI Price Compare Web - 管理 API 路由
 
 import { successResponse, errorResponse } from '../utils/response';
 import type { Env } from '../../shared/types';
-
-// 验证管理员密钥
-function verifyAdminKey(request: Request, env: Env): boolean {
-  const adminKey = request.headers.get('X-Admin-Key');
-  return !!env.ADMIN_KEY && !/^(your-|dev-admin-key)/.test(env.ADMIN_KEY) && adminKey === env.ADMIN_KEY;
-}
 
 // 获取待审核提交
 export async function getSubmissions(db: D1Database, status?: string) {
@@ -199,7 +194,7 @@ export async function handleAdmin(
   const url = new URL(request.url);
 
   // 验证管理员权限
-  if (!verifyAdminKey(request, env)) {
+  if (!await administrator(request, env)) {
     return errorResponse('Unauthorized', 401, headers);
   }
 

@@ -37,6 +37,8 @@
 | kvNamespaceId | 可选 KV ID；不用则为 null，不会创建虚假绑定 |
 | workersDev | 是否使用 workers.dev 访问 |
 | customDomain | 可选的托管自定义域名；填写时必须等于 siteUrl 的主机名 |
+| cronSchedules | 可选 UTC Cron，一更 `["0 1 * * *"]`，两更 `["0 1,13 * * *"]`；旧配置缺省不启用 |
+| automaticFx | 可选布尔值，控制定时同步参考汇率；旧配置缺省 false |
 | includeSeedData | 默认 false；不把旧演示 INSERT 当作生产数据自动载入 |
 
 域名、D1、可选 KV 应先在你的 Cloudflare 账号创建，复制 ID 到本地配置。脚本不会猜测数据库 ID，也不会自动创建/删除远程资源。workers.dev 地址需要你从实际账号中复制；不再用 Account ID 拼出不正确的访问地址。
@@ -112,7 +114,7 @@ D1、Secret 更新及 Worker 部署不是一个事务。数据库迁移成功后
 
 ## 6. Migration、历史与数据边界
 
-默认选中：0001_init、0003_product_catalog、0005_channel_prices_and_developer_submissions。默认不选中 0002_seed、0004_verified_catalog_seed；已有迁移记录保留，已执行的文件不会重跑。
+默认选中：0001_init、0003_product_catalog、0005_channel_prices_and_developer_submissions、0006_accounts_and_operations、0007_candidate_and_audit_guards。默认不选中 0002_seed、0004_verified_catalog_seed；已有迁移记录保留，已执行的文件不会重跑。
 
 `includeSeedData=true` 是显式选项，仅建议用于隔离演示环境。旧 bootstrap 为已有旧表登记 0002，避免在旧业务库补跑演示 INSERT；因此打开此选项也不保证给已有库补齐演示数据。不要修改已执行的 SQL 以强制重跑，应新增 Migration。
 

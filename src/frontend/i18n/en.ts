@@ -2,6 +2,7 @@
 
 export const en = {
   nav: {
+    discoveryLabMock: 'Discovery validation (mock)',
     channelPrices: 'Website & channel prices',
     costTools: 'Cost Comparison', voiceTools: 'AI Voice & TTS', musicTools: 'AI Music Generation',
     discoveryLab: 'Tool Finder & Comparison',

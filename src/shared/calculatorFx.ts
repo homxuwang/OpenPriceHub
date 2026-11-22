@@ -1,6 +1,6 @@
 import { D } from './discovery/decimal';
 import { decimalNumber,exactValue,fromExact,type ExactValue } from './creditPurchase';
-export interface RateMetadata { mode: 'manual'; baseCurrency: string; source: string; updatedAt: string }
+export interface RateMetadata { mode: 'manual'|'automatic'; baseCurrency: string; source: string; updatedAt: string }
 export interface FxState { rates: Record<string,number>; ratesExact?: Record<string,string>; rateRatios?: Record<string,ExactValue>; rateMeta?: RateMetadata }
 export function fxValue(state: FxState, code: string): D {
   if(state.rateRatios?.[code]) {const result=fromExact(state.rateRatios[code]);if(result.n<=0n)throw Error('Invalid rate');return result;}

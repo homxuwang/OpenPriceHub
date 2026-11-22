@@ -1,3 +1,4 @@
+import { administrator } from '../services/auth';
 // AI Price Compare Web - 平台 API 路由
 
 import { successResponse, errorResponse } from '../utils/response';
@@ -148,6 +149,7 @@ export async function handlePlatforms(
   env: Env,
   headers: Record<string, string>
 ): Promise<Response> {
+  if (!['GET','HEAD','OPTIONS'].includes(request.method) && !await administrator(request,env)) return errorResponse('Administrator authentication required',401,{...headers,'Cache-Control':'no-store'});
   const url = new URL(request.url);
   const pathParts = url.pathname.split('/').filter(Boolean);
   const id = pathParts[2]; // /api/platforms/:id

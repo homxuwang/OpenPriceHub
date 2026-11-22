@@ -1,3 +1,4 @@
+import { useUnified } from './UnifiedProvider';
 // OpenPriceHub · 数据层 — 现读 mock,签名与未来 API 对齐 ({data,loading,error})
 // 后续只需把实现换成 fetch,调用点不变。
 
@@ -16,31 +17,30 @@ interface Result<T> {
 }
 
 export function useTools(): Result<Tool[]> {
-  return { data: MOCK_TOOLS, loading: false, error: null };
+  const c=useUnified();return {data:c.tools,loading:c.loading,error:c.error};
 }
 
 export function useTool(slug: string | undefined): Result<Tool | null> {
-  const data = useMemo(() => MOCK_TOOLS.find((t) => t.slug === slug) ?? null, [slug]);
-  return { data, loading: false, error: null };
+  const c=useUnified();const data=useMemo(()=>c.tools.find(t=>t.slug===slug)??null,[c.tools,slug]);return {data,loading:c.loading,error:c.error};
 }
 
 export function useToolsBySlugs(slugs: string[]): Tool[] {
-  return useMemo(
-    () => slugs.map((s) => MOCK_TOOLS.find((t) => t.slug === s)).filter(Boolean) as Tool[],
-    [slugs.join(',')] // eslint-disable-line react-hooks/exhaustive-deps
+  const c=useUnified();return useMemo(
+    () => slugs.map((s) => c.tools.find((t) => t.slug === s)).filter(Boolean) as Tool[],
+    [c.tools,slugs.join(',')] // eslint-disable-line react-hooks/exhaustive-deps
   );
 }
 
 export function usePriceUpdates(): Result<PriceUpdate[]> {
-  return { data: MOCK_PRICE_UPDATES, loading: false, error: null };
+  return { data: useUnified().simulated?MOCK_PRICE_UPDATES:[], loading: false, error: null };
 }
 
 export function useGuides(): Result<Guide[]> {
-  return { data: MOCK_GUIDES, loading: false, error: null };
+  return { data: useUnified().simulated?MOCK_GUIDES:[], loading: false, error: null };
 }
 
 export function useSponsored(): Result<SponsoredSlot[]> {
-  return { data: MOCK_SPONSORED, loading: false, error: null };
+  return { data: useUnified().simulated?MOCK_SPONSORED:[], loading: false, error: null };
 }
 
 // ---- 纯选择器 ----------------------------------------------------
@@ -70,11 +70,11 @@ export function filterTools(tools: Tool[], f: ToolFilters): Tool[] {
     if (f.category && f.category !== 'all' && t.toolCategory !== f.category) return false;
     if (f.officialOnly && t.confidence !== 'official') return false;
     if (q) {
-      const hay = `${t.name} ${t.slug} ${t.tagline} ${t.taglineEn ?? ''} ${t.tags.join(' ')}`.toLowerCase();
+      const hay = `${t.name} ${t.slug} ${t.tagline} ${t.taglineEn ?? ''} ${t.tags.join(' ')} ${(t.searchTerms||[]).join(' ')}`.toLowerCase();
       if (!hay.includes(q)) return false;
     }
     if (f.audiences?.length && !f.audiences.some((a) => t.audiences.includes(a))) return false;
-    if (f.pricing?.length && !f.pricing.includes(t.pricingModel)) return false;
+    if (f.pricing?.length && !(t.pricingModels||[t.pricingModel]).some(p=>f.pricing!.includes(p))) return false;
     if (f.commercial?.length && !f.commercial.includes(t.commercialUse)) return false;
     if (f.capabilities?.length && !f.capabilities.some((c) => t.tags.includes(c))) return false;
     if (f.regions?.length) {

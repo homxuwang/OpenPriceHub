@@ -14,6 +14,7 @@ export function priceLabel(
   format: (a: number | null | undefined, c: string) => string,
   t: (k: string) => any
 ): string {
+  if(tool.live)return tool.priceDisplay||'—';
   if (tool.pricingModel === 'api' || tool.pricingModel === 'usage') return t('pricing.usage');
   if (tool.fromPrice == null) return t('common.priceUnknown');
   if (tool.fromPrice === 0) return t('pricing.free');

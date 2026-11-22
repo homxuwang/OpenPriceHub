@@ -1,3 +1,7 @@
+import { handleAccounts } from './routes/accounts';
+import { handleOperations } from './routes/operations';
+import { handleUnified } from './routes/unified';
+import { scheduledOperations } from './services/operations';
 import { handleWebsites } from "./routes/websites";
 import { handlePlatforms } from "./routes/platforms";
 import { handleModels } from "./routes/models";
@@ -7,6 +11,7 @@ import { handleAdmin } from "./routes/admin";
 import { handleCatalog } from "./routes/catalog";
 import type { Env } from "../shared/types";
 export default {
+  async scheduled(_event: unknown, env: Env, ctx: { waitUntil(p: Promise<unknown>): void }) { ctx.waitUntil(scheduledOperations(env)); },
   async fetch(request: Request, env: Env): Promise<Response> {
     const url = new URL(request.url);
     if (url.pathname.startsWith("/api/")) return handleAPI(request, env);
@@ -34,6 +39,9 @@ async function handleAPI(request: Request, env: Env) {
   };
   if (request.method === "OPTIONS") return new Response(null, { headers });
   try {
+    if (url.pathname.startsWith('/api/accounts/')) return await handleAccounts(request,env,headers);
+    if (url.pathname.startsWith('/api/operations/')) return await handleOperations(request,env,headers);
+    if (url.pathname.startsWith('/api/unified/')) return await handleUnified(request,env,headers);
     if (url.pathname === "/api/websites" || url.pathname.startsWith("/api/websites/"))
       return await handleWebsites(request, env, headers);
     if (url.pathname.startsWith("/api/catalog"))

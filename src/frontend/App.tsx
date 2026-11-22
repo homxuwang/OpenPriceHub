@@ -1,10 +1,14 @@
+import Account from './pages/Account';
+import Operations from './pages/Operations';
+import PublishedProducts from './pages/PublishedProducts';
+import { UnifiedProvider } from './data/UnifiedProvider';
 import DeveloperSubmit from './pages/DeveloperSubmit';
 import WebsiteAdmin from './pages/WebsiteAdmin';
 import WebsitePrices from './pages/WebsitePrices';
 // OpenPriceHub · App — /:lang 路由 + 全局 Provider
 
 import { useEffect } from 'react';
-import { BrowserRouter, Routes, Route, Navigate, useParams, useSearchParams } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, useParams } from 'react-router-dom';
 import { LocaleProvider, isLocale, type Locale } from './i18n';
 import { CurrencyProvider } from './context/CurrencyProvider';
 import { CompareProvider } from './context/CompareContext';
@@ -13,11 +17,7 @@ import Home from './pages/Home';
 import Tools from './pages/Tools';
 import AudioCompare from './pages/AudioCompare';
 import DiscoveryLab from './pages/DiscoveryLab';
-function ToolsEntry() {
-  const [params] = useSearchParams();
-  const category = params.get('category');
-  return category === 'voice' || category === 'tts' ? <AudioCompare key="voice" kind="voice" /> : category === 'music' ? <AudioCompare key="music" kind="music" /> : <Tools />;
-}
+function ToolsEntry() { return <Tools />; }
 import Submit from './pages/Submit';
 import Soon from './pages/Soon';
 import ManualCompareWorkspace from './pages/ManualCompareWorkspace';
@@ -37,15 +37,18 @@ function LocaleShell() {
   return (
     <LocaleProvider locale={lang}>
       <CurrencyProvider initial={lang === 'en' ? 'USD' : 'CNY'}>
-        <CompareProvider>
+        <UnifiedProvider><CompareProvider>
           <LocaleSync locale={lang} />
           <Layout>
             <Routes>
               <Route index element={<Home />} />
               <Route path="discovery-lab" element={<DiscoveryLab />} />
               <Route path="tools" element={<ToolsEntry />} />
-              <Route path="tools/:slug" element={<Soon />} />
-              <Route path="compare" element={<Soon />} />
+              <Route path="tools/:slug" element={<PublishedProducts mode="detail" />} />
+              <Route path="alternatives/:slug" element={<PublishedProducts mode="alternatives" />} />
+              <Route path="account" element={<Account />} />
+              <Route path="admin/operations" element={<Operations />} />
+              <Route path="compare" element={<PublishedProducts mode="compare" />} />
               <Route path="compare/tts" element={<AudioCompare key="voice" kind="voice" />} />
               <Route path="compare/music" element={<AudioCompare key="music" kind="music" />} />
               <Route path="calculator/voice" element={<AudioCompare key="voice" kind="voice" />} />
@@ -61,7 +64,7 @@ function LocaleShell() {
               <Route path="*" element={<Soon />} />
             </Routes>
           </Layout>
-        </CompareProvider>
+        </CompareProvider></UnifiedProvider>
       </CurrencyProvider>
     </LocaleProvider>
   );

@@ -1,3 +1,4 @@
+import { administrator } from '../services/auth';
 import type { Env } from "../../shared/types";
 import type { Catalog } from "../../shared/catalog/types";
 import {
@@ -24,13 +25,6 @@ export async function loadCatalog(
   }
   return { catalog: bundledCatalog, storage: "bundled" };
 }
-function admin(request: Request, env: Env) {
-  return (
-    !!env.ADMIN_KEY &&
-    !/^(your-|dev-admin-key)/.test(env.ADMIN_KEY) &&
-    request.headers.get("X-Admin-Key") === env.ADMIN_KEY
-  );
-}
 export async function handleCatalog(
   request: Request,
   env: Env,
@@ -40,7 +34,7 @@ export async function handleCatalog(
   const path = url.pathname;
   if (path.startsWith("/api/catalog/admin")) {
     headers = { ...headers, "Cache-Control": "no-store" };
-    if (!admin(request, env))
+    if (!await administrator(request, env))
       return errorResponse("Valid administrator key required.", 401, headers);
     if (request.method === "GET") {
       const data = await loadCatalog(env);

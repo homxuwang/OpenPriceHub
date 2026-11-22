@@ -11,5 +11,9 @@
   "kvNamespaceId": null,
   "workersDev": true,
   "customDomain": null,
-  "includeSeedData": false
+  "includeSeedData": false,
+  "cronSchedules": [
+    "0 1 * * *"
+  ],
+  "automaticFx": true
 }

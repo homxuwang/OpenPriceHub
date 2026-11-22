@@ -60,7 +60,7 @@ describe('private configuration-driven Cloudflare deployment',()=>{
   const a=join(folder,'config.json'),b=join(folder,'secrets.json'),link=join(folder,'link.json');writeFileSync(a,JSON.stringify(config),{mode:0o600});writeFileSync(b,JSON.stringify(secret),{mode:0o600});symlinkSync(b,link);expect(()=>loadSettings(a,link)).toThrow('symlink');
  });
  it('selects schema migrations by default and includes seeds only on explicit opt-in',()=>{
-  expect(migrationFiles()).toEqual(['0001_init.sql','0003_product_catalog.sql','0005_channel_prices_and_developer_submissions.sql']);expect(migrationFiles(true)).toContain('0002_seed.sql');expect(migrationFiles(true)).toContain('0004_verified_catalog_seed.sql');
+  expect(migrationFiles()).toEqual(['0001_init.sql','0003_product_catalog.sql','0005_channel_prices_and_developer_submissions.sql','0006_accounts_and_operations.sql','0007_candidate_and_audit_guards.sql']);expect(migrationFiles(true)).toContain('0002_seed.sql');expect(migrationFiles(true)).toContain('0004_verified_catalog_seed.sql');
  });
  it('requires ignored and untracked local files, even if forced into Git',()=>{
   execFileSync('git',['init','-q',folder]);writeFileSync(join(folder,'.gitignore'),'*.local.json\n');const path=join(folder,'secrets.local.json');writeFileSync(path,'private');expect(()=>assertPrivateFilesIgnored([path],folder)).not.toThrow();execFileSync('git',['-C',folder,'add','-f','secrets.local.json']);expect(()=>assertPrivateFilesIgnored([path],folder)).toThrow('tracked');

@@ -2,6 +2,7 @@
 
 export const zh = {
   nav: {
+    discoveryLabMock: '选型验证（模拟数据）',
     channelPrices: '网站与渠道报价',
     costTools: '成本比较', voiceTools: 'AI 语音生成', musicTools: 'AI 音乐生成',
     discoveryLab: '智能选型与比价',

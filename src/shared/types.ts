@@ -178,6 +178,8 @@ export interface Env {
   KV: KVNamespace;
   ADMIN_KEY: string;
   SITE_URL?: string;
+  ALLOW_HTTP_AUTH?: string;
+  FX_SYNC_ENABLED?: string;
   ASSETS: { fetch: typeof fetch };
 }
 
@@ -209,7 +211,7 @@ export type PricingModelType =
 // 商用权限 (文档 §6.4)
 export type CommercialUse = 'yes' | 'paid' | 'unclear' | 'no';
 
-export type WatermarkStatus = 'none' | 'watermarked' | 'removable';
+export type WatermarkStatus = 'none' | 'watermarked' | 'removable' | 'unknown';
 
 export type Region = 'cn' | 'global';
 
@@ -237,6 +239,10 @@ export interface UnitCostEstimate {
 }
 
 export interface Tool {
+  live?: boolean;
+  priceDisplay?: string;
+  pricingModels?: PricingModelType[];
+  searchTerms?: string[];
   id: string;
   slug: string;
   name: string;

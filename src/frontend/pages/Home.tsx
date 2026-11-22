@@ -1,3 +1,4 @@
+import { CatalogStatus,useUnified } from '../data/UnifiedProvider';
 // Incremental home: existing visual system, usable decision paths, explicit sample data.
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
@@ -11,23 +12,24 @@ import { AdvertisementSlot } from '../components/AdvertisementSlot';
 const categories: { id: ToolCategory; title: string; type: string; path: string; desc: string }[] = [
   { id: 'image', title: 'nav.image', type: 'image', path: '/tools?category=image', desc: 'home.scenes.image.desc' },
   { id: 'video', title: 'nav.video', type: 'video', path: '/tools?category=video', desc: 'home.scenes.video.desc' },
-  { id: 'voice', title: 'nav.voiceTools', type: 'tts', path: '/compare/tts', desc: 'home.voiceDesc' },
-  { id: 'music', title: 'nav.musicTools', type: 'music', path: '/compare/music', desc: 'home.musicDesc' },
+  { id: 'voice', title: 'nav.voiceTools', type: 'tts', path: '/tools?category=voice', desc: 'home.voiceDesc' },
+  { id: 'music', title: 'nav.musicTools', type: 'music', path: '/tools?category=music', desc: 'home.musicDesc' },
   { id: 'llm-api', title: 'nav.llmApi', type: 'api', path: '/tools?category=llm-api', desc: 'home.scenes.llm.desc' },
 ];
 function Home() {
   const t = useT(), locale = useLocale(), lp = useLocalePath();
   const [category, setCategory] = useState<ToolCategory>('image');
+  const {simulated}=useUnified();
   const tools = useTools().data, updates = usePriceUpdates().data, guides = useGuides().data;
   const visible = tools.filter(tool => tool.toolCategory === category).slice(0, 4);
   const selected = categories.find(c => c.id === category)!;
-  return <div className="space-y-10 sm:space-y-12" data-testid="home-content">
+  return <div className="space-y-10 sm:space-y-12" data-testid="home-content"><CatalogStatus/>
     <section className="pt-2 text-center sm:pt-4">
       <h1 className="mx-auto max-w-3xl font-display text-3xl font-bold leading-tight tracking-tight text-ink sm:text-5xl">{t('home.heroTitle')}</h1>
       <p className="mx-auto mt-4 max-w-2xl text-base text-ink-2 sm:text-lg">{t('home.heroSubtitle')}</p>
       <div className="mx-auto mt-6 max-w-2xl"><HomeSearch tools={tools} /><p className="mt-2 text-xs text-ink-2">{t('home.searchHint')}</p></div>
       <div className="mx-auto mt-5 flex max-w-2xl flex-col justify-center gap-3 sm:flex-row">
-        <Link to={lp('/discovery-lab')} className="btn-primary justify-center">{t('nav.discoveryLab')} <span className="rounded bg-white/20 px-1.5 py-0.5 text-xs">{t('home.mockExperience')}</span> →</Link>
+        <Link to={lp(simulated?'/discovery-lab':'/tools')} className="btn-primary justify-center">{simulated?t('nav.discoveryLab'):locale==='zh'?'产品与渠道选型':'Product and channel discovery'} <span className="rounded bg-white/20 px-1.5 py-0.5 text-xs">{simulated?t('home.mockExperience'):locale==='zh'?'已发布目录':'Published catalog'}</span> →</Link>
         <Link to={lp('/calculator')} className="btn-secondary justify-center">{t('nav.calculator')} →</Link>
       </div>
     </section>
@@ -37,17 +39,17 @@ function Home() {
     </div></section>
 
     <section aria-label={t('home.decisionTitle')} className="grid gap-4 md:grid-cols-2">
-      <Link to={lp('/discovery-lab')} className="card card-hover border-primary-100 bg-primary-50/60 p-5 sm:p-6"><span className="eyebrow">{t('home.finderEyebrow')}</span><h2 className="mt-2 font-display text-xl font-bold">{t('nav.discoveryLab')}</h2><p className="mt-2 text-sm text-ink-2">{t('home.finderDesc')}</p><p className="mt-3 text-xs text-warn">{t('home.finderNotice')}</p><span className="mt-4 block text-sm font-semibold text-primary">{t('home.startFinding')} →</span></Link>
+      <Link to={lp(simulated?'/discovery-lab':'/tools')} className="card card-hover border-primary-100 bg-primary-50/60 p-5 sm:p-6"><span className="eyebrow">{t('home.finderEyebrow')}</span><h2 className="mt-2 font-display text-xl font-bold">{simulated?t('nav.discoveryLab'):locale==='zh'?'产品与渠道选型':'Product and channel discovery'}</h2><p className="mt-2 text-sm text-ink-2">{simulated?t('home.finderDesc'):locale==='zh'?'查找已发布产品、模型与服务渠道，查看实际报价、来源和套餐条件。':'Find published products, models and channels with pricing sources and plan conditions.'}</p><p className="mt-3 text-xs text-warn">{simulated?t('home.finderNotice'):locale==='zh'?'原币种展示；没有价格或计量条件时不补造成本结论。':'Original currencies; missing prices or conditions do not produce invented cost conclusions.'}</p><span className="mt-4 block text-sm font-semibold text-primary">{t('home.startFinding')} →</span></Link>
       <div className="card p-5 sm:p-6"><span className="eyebrow">{t('home.calculatorEyebrow')}</span><h2 className="mt-2 font-display text-xl font-bold"><Link className="hover:text-primary" to={lp('/calculator')}>{t('nav.calculator')}</Link></h2><p className="mt-2 text-sm text-ink-2">{t('home.calculatorDesc')}</p><div className="mt-4 flex flex-wrap gap-2">{categories.map(c => <Link key={c.id} to={lp(`/calculator?type=${c.type}`)} className="chip hover:border-primary" data-testid={`home-calc-${c.id}`}>{t(c.title)} →</Link>)}</div></div>
     </section>
 
     <AdvertisementSlot placement="home-primary" />
 
     <section data-testid="home-catalog" aria-labelledby="home-catalog-title">
-      <div className="mb-3 flex flex-wrap items-center justify-between gap-3"><h2 id="home-catalog-title" className="font-display text-xl font-bold sm:text-2xl">{t('home.catalogTitle')}</h2><Link to={lp(selected.path)} className="text-sm font-semibold text-primary">{t('common.viewAll')} →</Link></div>
-      <p role="note" className="mb-4 rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-950">{t('home.catalogNotice')}</p>
+      <div className="mb-3 flex flex-wrap items-center justify-between gap-3"><h2 id="home-catalog-title" className="font-display text-xl font-bold sm:text-2xl">{simulated?t('home.catalogTitle'):locale==='zh'?'已发布产品与渠道':'Published products and channels'}</h2><Link to={lp(selected.path)} className="text-sm font-semibold text-primary">{t('common.viewAll')} →</Link></div>
+      <p role="note" className="mb-4 rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-950">{simulated?t('home.catalogNotice'):locale==='zh'?'显示数据库已发布内容；过期报价不作为当前最低价，价格保留原币种。':'Published database records; stale quotes are excluded from current starting prices, in original currencies.'}</p>
       <div className="mb-4 flex flex-wrap gap-2" role="group" aria-label={t('home.catalogCategories')}>{categories.map(c => <button key={c.id} type="button" className={`chip ${category === c.id ? 'chip-active' : ''}`} aria-pressed={category === c.id} onClick={() => setCategory(c.id)}>{t(c.title)}</button>)}</div>
-      {visible.length ? <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">{visible.map(tool => <ToolCard key={tool.id} tool={tool} preview />)}</div> : <div className="card p-6 text-center"><p className="text-ink-2">{t('home.noCategoryPrices')}</p><Link className="btn-secondary mt-4" to={lp(selected.path)}>{t('home.manualCategoryCompare')} →</Link></div>}
+      {visible.length ? <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">{visible.map(tool => <ToolCard key={tool.id} tool={tool} preview={!tool.live} />)}</div> : <div className="card p-6 text-center"><p className="text-ink-2">{t('home.noCategoryPrices')}</p><Link className="btn-secondary mt-4" to={lp(selected.path)}>{t('home.manualCategoryCompare')} →</Link></div>}
     </section>
 
     {!!updates.length && <section aria-labelledby="home-updates-title"><h2 id="home-updates-title" className="mb-3 font-display text-xl font-bold">{t('home.priceRecordsTitle')}</h2><p className="mb-4 text-sm text-ink-2">{t('home.priceRecordsNotice')}</p><div className="overflow-hidden rounded-card border border-line bg-surface">{updates.slice(0, 3).map(u => <div key={u.id} className="flex flex-wrap items-center gap-2 border-b border-line-2 px-4 py-3 last:border-b-0"><div className="min-w-0 flex-1"><span className="font-medium">{u.toolName}</span><p className="text-xs text-ink-2">{t('home.priceRecordDesc')}</p></div><span className="rounded bg-warn-soft px-2 py-1 text-xs text-warn">{t('home.sampleRecord')}</span><time dateTime={u.date} className="text-xs text-ink-2">{u.date}</time></div>)}</div></section>}

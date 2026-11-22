@@ -1,9 +1,9 @@
+import { administrator,principal,sameOrigin } from '../services/auth';
 import type { D1PreparedStatement } from '@cloudflare/workers-types';
 import type { Env } from '../../shared/types';
 import { validateWebsiteDraft, type WebsiteReviewRecord } from '../../shared/websiteSubmission';
 import { successResponse, errorResponse } from '../utils/response';
 
-const admin = (request:Request,env:Env)=>!!env.ADMIN_KEY&&!/^(your-|dev-admin-key)/.test(env.ADMIN_KEY)&&request.headers.get('X-Admin-Key')===env.ADMIN_KEY;
 interface SubmissionRow {id:string;original_json:string;draft_json:string;contact_email:string;status:WebsiteReviewRecord['status'];version:number;listing_id:string|null;admin_notes:string;created_at:string;updated_at:string}
 const record=(s:SubmissionRow):WebsiteReviewRecord=>({id:s.id,original:JSON.parse(s.original_json),draft:JSON.parse(s.draft_json),contactEmail:s.contact_email,status:s.status,version:s.version,listingId:s.listing_id,adminNotes:s.admin_notes,createdAt:s.created_at,updatedAt:s.updated_at});
 async function body(request:Request):Promise<any>{
@@ -18,7 +18,8 @@ export async function handleWebsites(request:Request,env:Env,baseHeaders:Record<
  const path=new URL(request.url).pathname,headers={...baseHeaders,'Cache-Control':'no-store'};
  try{
   if(path.startsWith('/api/websites/admin')){
-   if(!admin(request,env))return errorResponse('Valid administrator key required',401,headers);
+   const actor=await administrator(request,env,false);
+   if(!actor)return errorResponse('Valid administrator key required',401,headers);
    if(path==='/api/websites/admin/submissions'&&request.method==='GET'){
     const rows=await env.DB.prepare('SELECT * FROM website_submissions ORDER BY updated_at DESC,id LIMIT 200').all<SubmissionRow>();
     return successResponse({submissions:rows.results.map(record)},undefined,headers);
@@ -32,6 +33,7 @@ export async function handleWebsites(request:Request,env:Env,baseHeaders:Record<
    }
    if(match&&request.method==='PUT'){
     const input=await body(request);
+    if(input.action==='publish'&&!await administrator(request,env))return errorResponse('Publishing requires administrator role',403,headers);
     if(!['save','request_changes','reject','publish'].includes(input.action)||!Number.isSafeInteger(input.version))return errorResponse('Action and current version required',400,headers);
     const row=await env.DB.prepare('SELECT * FROM website_submissions WHERE id=?').bind(match[1]).first<SubmissionRow>();
     if(!row)return errorResponse('Submission not found',404,headers);
@@ -43,7 +45,7 @@ export async function handleWebsites(request:Request,env:Env,baseHeaders:Record<
     if(['reject','request_changes'].includes(input.action)&&!notes)return errorResponse('Review reason required',400,headers);
     if(input.action==='publish'&&input.confirmed!==true)return errorResponse('Confirm official/third-party relationship, price source and billing terms before publishing',400,headers);
     const now=new Date().toISOString(),db=env.DB,statements:D1PreparedStatement[]=[];
-    statements.push(db.prepare('INSERT INTO website_review_logs(id,submission_id,base_version,action,actor,notes,snapshot_json,created_at) VALUES(?,?,?,?,?,?,?,?)').bind(crypto.randomUUID(),row.id,row.version,input.action,'administrator',notes,JSON.stringify(draft),now));
+    statements.push(db.prepare('INSERT INTO website_review_logs(id,submission_id,base_version,action,actor,notes,snapshot_json,created_at) VALUES(?,?,?,?,?,?,?,?)').bind(crypto.randomUUID(),row.id,row.version,input.action,actor.id,notes,JSON.stringify(draft),now));
     let listingId=row.listing_id;
     if(input.action==='publish'){
      const listing=listingId?await db.prepare('SELECT channel_id FROM channel_listings WHERE id=?').bind(listingId).first<{channel_id:string}>():null;
@@ -67,6 +69,8 @@ export async function handleWebsites(request:Request,env:Env,baseHeaders:Record<
    return errorResponse('Not found',404,headers);
   }
   if(path==='/api/websites/submissions'&&request.method==='POST'){
+   if(!sameOrigin(request,env))return errorResponse('Origin not allowed',403,headers);
+   const owner=await principal(request,env);
    const input=await body(request);if(input.company)return errorResponse('Invalid submission',400,headers);
    if(typeof input.requestId!=='string'||!/^[-a-zA-Z0-9]{16,80}$/.test(input.requestId))return errorResponse('Request ID required',400,headers);
    const draft=validateWebsiteDraft(input.draft),email=String(input.contactEmail||'').trim();
@@ -79,7 +83,7 @@ export async function handleWebsites(request:Request,env:Env,baseHeaders:Record<
    try{await env.DB.batch([
     env.DB.prepare('DELETE FROM website_submission_limits WHERE expires_at<?').bind(stamp),
     env.DB.prepare('INSERT INTO website_submission_limits(bucket,count,expires_at) VALUES(?,1,?) ON CONFLICT(bucket) DO UPDATE SET count=count+1').bind(bucket,new Date(now.getTime()+7200000).toISOString()),
-    env.DB.prepare('INSERT INTO website_submissions(id,original_json,draft_json,contact_email,created_at,updated_at) VALUES(?,?,?,?,?,?)').bind(input.requestId,original,original,email,stamp,stamp)
+    env.DB.prepare('INSERT INTO website_submissions(id,original_json,draft_json,contact_email,created_at,updated_at,owner_user_id) VALUES(?,?,?,?,?,?,?)').bind(input.requestId,original,original,email,stamp,stamp,owner?.id==='bootstrap'?null:owner?.id||null)
    ]);}catch(error){if(String(error).includes('CHECK constraint failed'))return errorResponse('Too many submissions; try again next hour',429,headers);if(String(error).includes('UNIQUE constraint failed'))return errorResponse('Request already processed; retry to confirm',409,headers);throw error;}
    return successResponse({id:input.requestId,status:'pending'},'Received for administrator review; not published',headers);
   }

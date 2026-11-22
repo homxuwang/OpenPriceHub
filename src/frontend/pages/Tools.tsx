@@ -1,3 +1,4 @@
+import { CatalogStatus,useUnified } from '../data/UnifiedProvider';
 // OpenPriceHub · AI 工具库 (文档 §6)
 
 import React, { useMemo, useState } from 'react';
@@ -57,7 +58,7 @@ function FilterPanel({ filters, setFilters }: { filters: ToolFilters; setFilters
 
 function SortSelect({ value, onChange }: { value: SortKey; onChange: (v: SortKey) => void }) {
   const t = useT();
-  const opts: SortKey[] = ['recommended', 'popular', 'priceAsc', 'updated', 'free'];
+  const opts: SortKey[] = useUnified().simulated?['recommended','popular','priceAsc','updated','free']:['updated','free'];
   return (
     <label className="inline-flex items-center gap-2 text-sm text-ink-2">
       <span className="hidden sm:inline">{t('common.sort')}</span>
@@ -159,6 +160,7 @@ function Tools() {
   const { currency } = useCurrency();
   const [params, setParams] = useSearchParams();
   const allTools = useTools().data;
+  const {simulated}=useUnified();
   const sponsored = useSponsored().data;
 
   const urlCat = (params.get('category') as ToolCategory | null) || 'all';
@@ -194,14 +196,14 @@ function Tools() {
 
   const result = useMemo(() => {
     const filtered = filterTools(allTools, { ...filters, category: urlCat, officialOnly, query: urlQ });
-    return sortTools(filtered, sort, currency);
-  }, [allTools, filters, urlCat, officialOnly, urlQ, sort, currency]);
+    return sortTools(filtered, !simulated&&!['updated','free'].includes(sort)?'updated':sort, currency);
+  }, [allTools, filters, urlCat, officialOnly, urlQ, sort, currency,simulated]);
 
   // 计算激活筛选数(用于移动端按钮角标)
   const activeCount = FILTER_CONFIG.reduce((n, g) => n + ((filters[g.field] as string[] | undefined)?.length ?? 0), 0);
 
   return (
-    <div>
+    <div><CatalogStatus/>
       {/* 标题 */}
       <div className="mb-6">
         <span className="eyebrow">// {t('categories.all')} · TOOLS</span>
@@ -273,7 +275,7 @@ function Tools() {
               </span>
             </div>
             <div className="flex items-center gap-3">
-              <SortSelect value={sort} onChange={setSort} />
+              <SortSelect value={!simulated&&!['updated','free'].includes(sort)?'updated':sort} onChange={setSort} />
               <ViewToggle view={view} onChange={setView} />
             </div>
           </div>
